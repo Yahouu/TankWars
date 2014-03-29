@@ -1,7 +1,4 @@
-/*  ***REMOVED***
-    ***REMOVED***
-
-    Projet de programmation en C - 1ère année
+/*  Projet de programmation en C - 1ère année
     Tank Wars
     Construit avec SDL 2.0
     */
@@ -16,7 +13,7 @@
 // On définit notre tableau de jeu
 
 #define BLOC                46                  // Dimensions en pixels d'un bloc
-#define DIMTANK             34                  // Dimensions d'un tank
+#define DIMTANK             32                  // Dimensions d'un tank
 #define LARGEUR             11                  // Nombre de blocs horizontalement
 #define HAUTEUR             11                  // Nombre de blocs verticalement
 #define DIMENSION           506                 // Dimensions de notre fenêtre
@@ -26,12 +23,12 @@
 enum liste_terrain {NORMAL, MINE, POLLUE, BASE1, BASE2, TANK, COMMAND};
 
 void pause();
+//void close();
+bool initialisation();
 
 int main(int argc, char *argv[])
 {
-    // On initialise SDL et on vérifie immédiatement si la librairie s'est bien lancée
-
-    if (SDL_Init(SDL_INIT_VIDEO) != 0 )
+    if (!initialisation())
     {
         fprintf(stdout,"Échec de l'initialisation de la SDL (%s)\n",SDL_GetError());
         return -1;
@@ -39,7 +36,7 @@ int main(int argc, char *argv[])
 
     // Notre terrain de jeu
 
-    int terrain[11][11] = {
+    int terrain[LARGEUR][HAUTEUR] = {
    { 3,3,3,3,3,1,0,0,0,0,0 },
    { 3,1,3,3,0,0,0,0,0,1,0 },
    { 3,3,3,1,0,1,0,1,0,0,0 },
@@ -53,9 +50,13 @@ int main(int argc, char *argv[])
    { 0,0,0,0,0,1,4,4,4,4,4 },
     };
 
-    // Création de la fenêtre
+    // Initialisation de nos pointeurs
 
     SDL_Window* ecran = NULL;
+    SDL_Surface *sp_terrain_tmp = NULL, *sp_terrain = NULL, *sp_placeholder = NULL;
+
+    // Création de la fenêtre
+
     ecran = SDL_CreateWindow("TankWars",SDL_WINDOWPOS_UNDEFINED,    // Position de la fenêtre sur l'écran de l'utilisateur
                                         SDL_WINDOWPOS_UNDEFINED,    // Ici ça ne nous importe pas
                                         DIMENSION,                  // Dimensions
@@ -64,21 +65,21 @@ int main(int argc, char *argv[])
 
     // Création des sprites
 
-    SDL_Surface *sp_terrain = SDL_LoadBMP("./carte.bmp"), *sp_placeholder = IMG_Load("./mur.jpg");
+    sp_terrain_tmp = SDL_LoadBMP("./carte.bmp");
+    sp_placeholder = SDL_LoadBMP("mario.bmp");
 
     // On vérifie si la fenêtre puis les différents sprites ont bien été chargés ; ils prennent alors la valeur TRUE et on procède
 
     if( ecran )
     {
-        if ( sp_terrain && sp_placeholder )
+        if ( sp_terrain_tmp && sp_placeholder )
         {
-            SDL_Rect dest_sp_terrain = { 0, 0, 0, 0};  // On définit un rectangle dans la fenêtre pour placer notre sprite
-            SDL_Rect dest_sp_placeholder = {BLOC/2 - TANK/2,BLOC/2 - TANK/2,0,0};
-            SDL_BlitSurface(sp_terrain,NULL,SDL_GetWindowSurface(ecran),&dest_sp_terrain); // Copie du sprite
+            SDL_Rect dest_sp_placeholder = { BLOC/2 - DIMTANK/2, BLOC/2 - DIMTANK/2, 0, 0};  // On définit un rectangle dans la fenêtre pour placer notre sprite
+            sp_terrain = SDL_ConvertSurface( sp_terrain_tmp, SDL_GetWindowSurface(ecran)->format, NULL );
+            SDL_FreeSurface( sp_terrain_tmp );
+            SDL_BlitSurface(sp_terrain,NULL,SDL_GetWindowSurface(ecran),NULL); // Copie du sprite &dest_sp_terrain
             SDL_BlitSurface(sp_placeholder,NULL,SDL_GetWindowSurface(ecran),&dest_sp_placeholder);
-
-            SDL_UpdateWindowSurface(ecran); // Mise à jour de la fenêtre pour prendre en compte la copie du sprite
-
+            SDL_UpdateWindowSurface(ecran);
         }
 
         else
@@ -93,11 +94,41 @@ int main(int argc, char *argv[])
     }
 
     pause();
+    IMG_Quit();
     SDL_FreeSurface(sp_terrain);
+    SDL_FreeSurface(sp_placeholder);
+    sp_terrain = NULL;
+    sp_placeholder = NULL;
     SDL_DestroyWindow(ecran);
+    ecran = NULL;
     SDL_Quit();
 
     return 0;
+}
+
+bool initialisation()
+{
+    bool init=true;
+
+    // On initialise SDL et on vérifie immédiatement si la librairie s'est bien lancée
+
+    if (SDL_Init(SDL_INIT_VIDEO) != 0 )
+    {
+        fprintf(stdout,"Échec de l'initialisation de la SDL (%s)\n",SDL_GetError());
+        init=false;
+    }
+
+    // SDL_Image
+
+    int flags=IMG_INIT_JPG|IMG_INIT_PNG;
+    int initted=IMG_Init(flags);
+    if((initted&flags) != flags) {
+        fprintf(stdout,"Echec de l'initialisation du support des png et jpg par IMG_Init (%s)\n",IMG_GetError());
+        init=false;
+    }
+
+    return init;
+
 }
 
 void pause()
@@ -128,3 +159,18 @@ void pause()
         }
     }
 }
+
+/*void close()
+{
+    Cette procédure vide la mémoire, pointe nos pointeurs sur NULL et quitte SDL
+
+    IMG_Quit();
+    SDL_FreeSurface(sp_terrain);
+    SDL_FreeSurface(sp_placeholder);
+    sp_terrain = NULL;
+    sp_placeholder = NULL;
+    SDL_DestroyWindow(ecran);
+    ecran = NULL;
+    SDL_Quit();
+
+}*/

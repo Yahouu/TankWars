@@ -30,6 +30,14 @@ local.properties
 
 
 #################
+## Code::Blocks
+#################
+
+*.depend
+*.layout
+*.cbp
+
+#################
 ## Visual Studio
 #################
 

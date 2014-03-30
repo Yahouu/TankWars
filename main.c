@@ -1,7 +1,4 @@
-/*  ***REMOVED***
-    ***REMOVED***
-
-    Projet de programmation en C - 1ère année
+/*  Projet de programmation en C - 1ère année
     Tank Wars
     Construit avec SDL 2.0
     */

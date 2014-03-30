@@ -23,10 +23,20 @@
 enum liste_terrain {NORMAL, MINE, POLLUE, BASE1, BASE2};
 enum liste_tank {VIDE, TANK1, TANK2, TANK1_CMD, TANK2_CMD};
 
+// Prototypes
+
 int initialisation();
-void generateur(SDL_Window *ecran, SDL_Surface *sp_terrain[], SDL_Surface *sp_tanka, SDL_Surface *sp_tankb, int tab_tank[][HAUTEUR], int terrain[][HAUTEUR]);
+void loadTextures( SDL_Texture *sp_terrain[],SDL_Texture *sp_tank[],SDL_Texture *sp_tank_mvt[]);
+void generateTextures(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR]);
 void pause();
-void close(SDL_Window *ecran, SDL_Surface *sp_terrain[], SDL_Surface *sp_tanka, SDL_Surface *sp_tankb, SDL_Surface *sp_tanka_mvt, SDL_Surface *sp_tankb_mvt);
+void close(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[],SDL_Texture *sp_tank_mvt[]);
+
+// Fenêtre de jeu et renderer
+
+SDL_Window *ecran = NULL;
+SDL_Renderer *renderer = NULL;
+
+// Fonction principale
 
 int main(int argc, char *argv[])
 {
@@ -36,7 +46,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    int i,j;
     int continuer = 1, mouvement = 0, selection_tank;
 
     // Notre terrain de jeu
@@ -71,170 +80,118 @@ int main(int argc, char *argv[])
         { 0,0,0,0,0,0,2,2,2,2,2 },
     };
 
-    SDL_Event event;
+    SDL_Event event;    // Utilisé pour la gestion des évènements
+    SDL_Rect dest_mouvement = {0,0,BLOC,BLOC};  // Utilisé pour déplacer un tank et faire suivre la souris au sprite
 
-    // Initialisation de nos pointeurs
+    // On charge les textures
 
-    SDL_Window *ecran = NULL;
-    SDL_Surface *sp_terrain_tmp[5] = {NULL}, *sp_terrain[5] = {NULL}, *sp_tanka = NULL, *sp_tanka_mvt = NULL, *sp_tankb = NULL, *sp_tankb_mvt = NULL;
+    SDL_Texture *sp_terrain[5] = {NULL}, *sp_tank[5] = {NULL}, *sp_tank_mvt[5] = {NULL};
+    loadTextures(sp_terrain, sp_tank, sp_tank_mvt);
 
-    // Création de la fenêtre
+    // On génère notre terrain pour la première fois
 
-    ecran = SDL_CreateWindow("TankWars",SDL_WINDOWPOS_UNDEFINED,    // Position de la fenêtre sur l'écran de l'utilisateur
-                                        SDL_WINDOWPOS_UNDEFINED,    // Ici ça ne nous importe pas
-                                        DIMENSION,                  // Dimensions
-                                        DIMENSION,
-                                        SDL_WINDOW_SHOWN);          // On affiche la fenêtre, cachée par défaut
+    SDL_RenderClear( renderer );
+    generateTextures(ecran, sp_terrain, sp_tank, tab_tank, terrain);
+    SDL_RenderPresent( renderer );
 
-    // Création des sprites
-
-    sp_terrain_tmp[NORMAL] = IMG_Load("normal.png");
-    sp_terrain_tmp[MINE] = IMG_Load("mine.png");
-    sp_terrain_tmp[POLLUE] = IMG_Load("toxic.png");
-    sp_terrain_tmp[BASE1] = IMG_Load("base1.png");
-    sp_terrain_tmp[BASE2] = IMG_Load("base2.png");
-    sp_tanka = IMG_Load("tankar.png");
-    sp_tankb = IMG_Load("tankbr.png");
-    sp_tanka_mvt = IMG_Load("tankar.png");
-    sp_tankb_mvt = IMG_Load("tankbr.png");
-
-    // On vérifie si la fenêtre puis les différents sprites ont bien été chargés ; ils prennent alors la valeur TRUE et on procède
-
-    if( ecran )
+    // Boucle infinie pour bouger un tank
+    while (continuer)
     {
-        if ( sp_terrain_tmp && sp_tanka && sp_tanka_mvt && sp_tankb)
+        SDL_WaitEvent(&event);
+        if (event.type == SDL_QUIT)
         {
-            SDL_Rect dest_mouvement = {0,0,0,0};
+            continuer = 0;
+        }
 
-            // Génération de notre terrain après optimisation
+        // Quand on ne bouge pas encore un tank, on clique sur un tank et celui-ci disparaît
 
-            for (i = 0 ; i < 5 ; i++)
+        if (event.type == SDL_MOUSEBUTTONDOWN)
+        {
+            int x=0, y=0;
+            SDL_GetMouseState( &x, &y );
+
+            /* ---------debugging----------*/
+
+            printf("%d %d\n",x,y);
+            printf("%d %d\n",x/BLOC,y/BLOC);
+            printf("%d", terrain[x / BLOC][y / BLOC]);
+
+            /* -------------------------- */
+
+            if (mouvement)
             {
-                sp_terrain[i] = SDL_ConvertSurface( sp_terrain_tmp[i], SDL_GetWindowSurface(ecran)->format, NULL );
-                SDL_FreeSurface( sp_terrain_tmp[i] );
+                if (selection_tank == 1 && tab_tank[x/BLOC][y/BLOC] != TANK1)  // On vérifie qu'on ne clique pas sur un tank
+                {
+                    tab_tank[x / BLOC][y / BLOC] = TANK1;
+                    mouvement=0;
+                    continuer=0;
+                }
+
+                if (selection_tank == 2 && tab_tank[x/BLOC][y/BLOC] != TANK2)  // On vérifie qu'on ne clique pas sur un tank
+                {
+                    tab_tank[x / BLOC][y / BLOC] = TANK2;
+                    mouvement = 0;
+                    continuer=0;
+                }
             }
 
-            generateur(ecran, sp_terrain, sp_tanka, sp_tankb, tab_tank, terrain);
-            SDL_UpdateWindowSurface(ecran);
-
-            // Boucle infinie pour bouger un tank
-            while (continuer)
+            else if (!mouvement)
             {
-                SDL_WaitEvent(&event);
-                if (event.type == SDL_QUIT)
+                // On retient quel tank on a selectionné
+
+                if (tab_tank[x/BLOC][y/BLOC] == TANK1)
                 {
-                    continuer = 0;
+                    selection_tank = TANK1;
+                    mouvement = 1;
                 }
 
-                // Quand on ne bouge pas encore un tank, on clique sur un tank et celui-ci disparaît
-
-                if (event.type == SDL_MOUSEBUTTONDOWN)
+                else if (tab_tank[x/BLOC][y/BLOC] == TANK2)
                 {
-                    int x=0, y=0;
-                    SDL_GetMouseState( &x, &y );
-
-                    /* ---------debugging----------*/
-
-                    printf("%d %d\n",x,y);
-                    printf("%d %d\n",x/BLOC,y/BLOC);
-                    printf("%d", terrain[x / BLOC][y / BLOC]);
-
-                    /* -------------------------- */
-
-                    if (mouvement)
-                    {
-                        if (selection_tank == 1 && tab_tank[x/BLOC][y/BLOC] != TANK1)  // On vérifie qu'on ne clique pas sur un tank
-                        {
-                                tab_tank[x / BLOC][y / BLOC] = TANK1;
-                                mouvement=0;
-                                continuer=0;
-                        }
-
-                        if (selection_tank == 2 && tab_tank[x/BLOC][y/BLOC] != TANK2)  // On vérifie qu'on ne clique pas sur un tank
-                        {
-                                tab_tank[x / BLOC][y / BLOC] = TANK2;
-                                mouvement = 0;
-                                continuer=0;
-                        }
-                    }
-
-                    else if (!mouvement)
-                    {
-                        // On retient quel tank on a selectionné
-
-                        if (tab_tank[x/BLOC][y/BLOC] == TANK1)
-                        {
-                            selection_tank = TANK1;
-                            mouvement = 1;
-                        }
-
-                        else if (tab_tank[x/BLOC][y/BLOC] == TANK2)
-                        {
-                            selection_tank = TANK2;
-                            mouvement = 1;
-                        }
-
-                        tab_tank[x / BLOC][y / BLOC] = VIDE;
-                    }
+                    selection_tank = TANK2;
+                    mouvement = 1;
                 }
 
-                // Quand on a sélectionné un tank et on bouge la souris, le tank suit nos mouvements
-
-                if (event.type == SDL_MOUSEMOTION && mouvement)
-                {
-                    dest_mouvement.x = event.motion.x;
-                    dest_mouvement.y = event.motion.y;
-
-                    // On remplit le rectangle dest_mouvement de blanc, on re-génère le terrain et on blitte sp_tank{a,b}_mvt
-                    // Sinon, on a une trainée de tanks suivant les mouvements de la souris
-
-                    if (selection_tank == 1)
-                    {
-                        SDL_FillRect(sp_tanka_mvt, &dest_mouvement, SDL_MapRGB(sp_tanka->format, 255, 255, 255));
-                    }
-
-                    if (selection_tank == 2)
-                    {
-                        SDL_FillRect(sp_tankb_mvt, &dest_mouvement, SDL_MapRGB(sp_tanka->format, 255, 255, 255));
-                    }
-                }
-
-                generateur(ecran, sp_terrain, sp_tanka, sp_tankb, tab_tank, terrain);
-
-                if (mouvement && selection_tank == 1)
-                {
-                    SDL_BlitSurface(sp_tanka_mvt,NULL,SDL_GetWindowSurface(ecran),&dest_mouvement);
-                }
-
-                if (mouvement && selection_tank == 2)
-                {
-                    SDL_BlitSurface(sp_tankb_mvt,NULL,SDL_GetWindowSurface(ecran),&dest_mouvement);
-                }
-
-                SDL_UpdateWindowSurface(ecran);
-
+                tab_tank[x / BLOC][y / BLOC] = VIDE;
             }
         }
 
-        else
+        // Quand on a sélectionné un tank et on bouge la souris, le tank suit nos mouvements
+
+        if (event.type == SDL_MOUSEMOTION && mouvement)
         {
-                fprintf(stdout,"Échec de chargement du sprite (%s)\n",SDL_GetError());
+            dest_mouvement.x = event.motion.x;
+            dest_mouvement.y = event.motion.y;
         }
 
-    }
-    else
-    {
-            fprintf(stderr,"Erreur de création de la fenêtre: %s\n",SDL_GetError());
+        SDL_RenderClear( renderer );
+        generateTextures(ecran, sp_terrain, sp_tank, tab_tank, terrain);
+
+        if (mouvement && selection_tank == 1)
+        {
+            SDL_RenderCopy( renderer, sp_tank_mvt[TANK1], NULL, &dest_mouvement );
+        }
+
+        if (mouvement && selection_tank == 2)
+        {
+            SDL_RenderCopy( renderer, sp_tank_mvt[TANK2], NULL, &dest_mouvement );
+        }
+
+        SDL_RenderPresent( renderer );
     }
 
     pause();
-    close(ecran, sp_terrain, sp_tanka, sp_tankb, sp_tanka_mvt, sp_tankb_mvt);
+    close(ecran, sp_terrain, sp_tank, sp_tank_mvt);
 
     return 0;
 }
 
 int initialisation()
 {
+    /*  Cette fonction permet d'initialiser toutes les autres fonctions nécessaire au lancement du jeu.
+        On initialise SDL, SDL_Image, le renderer et on crée la fenêtre de jeu.
+        Si on a un problème, un message d'erreur est affiché dans SDL_console.
+        */
+
     int init=1;
 
     // On initialise SDL et on vérifie immédiatement si la librairie s'est bien lancée
@@ -244,6 +201,37 @@ int initialisation()
         fprintf(stdout,"Échec de l'initialisation de la SDL (%s)\n",SDL_GetError());
         init=0;
     }
+
+    if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
+    {
+        printf( "Échec de l'initialisation du filtrage linéaire de textures!" );
+    }
+
+    // Création de la fenêtre
+
+    ecran = SDL_CreateWindow("TankWars",SDL_WINDOWPOS_UNDEFINED,    // Position de la fenêtre sur l'écran de l'utilisateur
+                                        SDL_WINDOWPOS_UNDEFINED,    // Ici ça ne nous importe pas
+                                        DIMENSION,                  // Dimensions
+                                        DIMENSION,
+                                        SDL_WINDOW_SHOWN);          // On affiche la fenêtre, cachée par défaut
+
+    if( ecran == NULL )
+    {
+        printf( "Échec de la création de la fenêtre: %s\n", SDL_GetError() );
+        init = 0;
+    }
+
+    // Création du renderer
+
+    renderer = SDL_CreateRenderer( ecran, -1, SDL_RENDERER_ACCELERATED );
+
+    if( ecran == NULL )
+    {
+        printf( "Échec de la création du renderer: SDL Error: %s\n", SDL_GetError() );
+        init = 0;
+    }
+
+    SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
 
     // SDL_Image
 
@@ -258,9 +246,27 @@ int initialisation()
 
 }
 
-void generateur(SDL_Window *ecran, SDL_Surface *sp_terrain[], SDL_Surface *sp_tanka, SDL_Surface *sp_tankb, int tab_tank[][HAUTEUR], int terrain[][HAUTEUR])
+void loadTextures(SDL_Texture *sp_terrain[],SDL_Texture *sp_tank[],SDL_Texture *sp_tank_mvt[])
 {
-    SDL_Rect destination;
+    /*  Cette procédure charge toutes nos textures en mémoire.*/
+
+    sp_terrain[NORMAL] = SDL_CreateTextureFromSurface( renderer, IMG_Load("normal.png"));
+    sp_terrain[MINE] = SDL_CreateTextureFromSurface( renderer, IMG_Load("mine.png"));
+    sp_terrain[POLLUE] = SDL_CreateTextureFromSurface( renderer, IMG_Load("toxic.png"));
+    sp_terrain[BASE1] = SDL_CreateTextureFromSurface( renderer, IMG_Load("base1.png"));
+    sp_terrain[BASE2] = SDL_CreateTextureFromSurface( renderer, IMG_Load("base2.png"));
+    sp_tank[TANK1] = SDL_CreateTextureFromSurface( renderer, IMG_Load("tankar.png"));
+    sp_tank[TANK2] = SDL_CreateTextureFromSurface( renderer, IMG_Load("tankbr.png"));
+    sp_tank_mvt[TANK1] = SDL_CreateTextureFromSurface( renderer, IMG_Load("tankar.png"));
+    sp_tank_mvt[TANK2] = SDL_CreateTextureFromSurface( renderer, IMG_Load("tankbr.png"));
+}
+
+void generateTextures(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR])
+{
+    /*  Cette procédure génère nos textures dans notre fenêtre de jeu */
+
+    SDL_Rect source = {0,0,BLOC, BLOC};
+    SDL_Rect destination = {0,0,BLOC,BLOC};
     int i,j;
 
     for (i = 0 ; i < LARGEUR ; i++)
@@ -272,34 +278,34 @@ void generateur(SDL_Window *ecran, SDL_Surface *sp_terrain[], SDL_Surface *sp_ta
             switch(terrain[i][j])
             {
                 case 0:
-                    SDL_BlitSurface(sp_terrain[0],NULL,SDL_GetWindowSurface(ecran),&destination);
+                    SDL_RenderCopy( renderer, sp_terrain[NORMAL], NULL, &destination );
                     break;
 
                 case 1:
-                    SDL_BlitSurface(sp_terrain[1],NULL,SDL_GetWindowSurface(ecran),&destination);
+                    SDL_RenderCopy( renderer, sp_terrain[MINE], NULL, &destination );
                     break;
 
                 case 2:
-                    SDL_BlitSurface(sp_terrain[2],NULL,SDL_GetWindowSurface(ecran),&destination);
+                    SDL_RenderCopy( renderer, sp_terrain[POLLUE], NULL, &destination );
                     break;
 
                 case 3:
-                    SDL_BlitSurface(sp_terrain[3],NULL,SDL_GetWindowSurface(ecran),&destination);
+                    SDL_RenderCopy( renderer, sp_terrain[BASE1], NULL, &destination );
                     break;
 
                 case 4:
-                    SDL_BlitSurface(sp_terrain[4],NULL,SDL_GetWindowSurface(ecran),&destination);
+                    SDL_RenderCopy( renderer, sp_terrain[BASE2], NULL, &destination );
                     break;
             }
 
             if (tab_tank[i][j] == 1)
             {
-                SDL_BlitSurface(sp_tanka,NULL,SDL_GetWindowSurface(ecran),&destination);
+                SDL_RenderCopy( renderer, sp_tank[TANK1], &source, &destination );
             }
 
             if (tab_tank[i][j] == 2)
             {
-                SDL_BlitSurface(sp_tankb,NULL,SDL_GetWindowSurface(ecran),&destination);
+                SDL_RenderCopy( renderer, sp_tank[TANK2], &source, &destination );
             }
         }
     }
@@ -334,28 +340,25 @@ void pause()
     }
 }
 
-
-void close(SDL_Window *ecran, SDL_Surface *sp_terrain[], SDL_Surface *sp_tanka, SDL_Surface *sp_tankb, SDL_Surface *sp_tanka_mvt, SDL_Surface *sp_tankb_mvt)
+void close(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], SDL_Texture *sp_tank_mvt[])
 {
     /* Cette procédure vide la mémoire, pointe nos pointeurs sur NULL et quitte SDL */
 
     int i;
 
-    IMG_Quit();
-    SDL_FreeSurface(sp_tanka);
-    SDL_FreeSurface(sp_tankb);
-    SDL_FreeSurface(sp_tanka_mvt);
-    SDL_FreeSurface(sp_tankb_mvt);
     for (i = 0 ; i < 5 ; i++)
     {
-        SDL_FreeSurface( sp_terrain[i] );
+        SDL_DestroyTexture( sp_terrain[i] );
+        SDL_DestroyTexture(sp_tank[i]);
+        SDL_DestroyTexture(sp_tank_mvt[i]);
     }
     sp_terrain = {NULL};
-    sp_tanka = NULL;
-    sp_tankb = NULL;
-    sp_tanka_mvt = NULL;
-    sp_tankb_mvt = NULL;
+    sp_tank = {NULL};
+    sp_tank_mvt = {NULL};
+    SDL_DestroyRenderer( renderer );
     SDL_DestroyWindow(ecran);
+    renderer= NULL;
     ecran = NULL;
+    IMG_Quit();
     SDL_Quit();
 }

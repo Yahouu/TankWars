@@ -28,6 +28,7 @@ enum liste_tank {VIDE, TANK1, TANK2, TANK1_CMD, TANK2_CMD};
 int initialisation();
 void loadTextures( SDL_Texture *sp_terrain[],SDL_Texture *sp_tank[],SDL_Texture *sp_tank_mvt[]);
 void generateTextures(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR]);
+void deplacerTank(int *joueur, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], SDL_Texture *sp_tank_mvt[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR]);
 void pause();
 void close(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[],SDL_Texture *sp_tank_mvt[]);
 
@@ -46,7 +47,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    int continuer = 1, mouvement = 0, selection_tank;
+    srand(time(NULL));
+    int joueur = ((rand()%2)+1);   // Joueur 1 ou 2 commence au hasard
 
     // Notre terrain de jeu
 
@@ -80,9 +82,6 @@ int main(int argc, char *argv[])
         { 0,0,0,0,0,0,2,2,2,2,2 },
     };
 
-    SDL_Event event;    // Utilisé pour la gestion des évènements
-    SDL_Rect dest_mouvement = {0,0,BLOC,BLOC};  // Utilisé pour déplacer un tank et faire suivre la souris au sprite
-
     // On charge les textures
 
     SDL_Texture *sp_terrain[5] = {NULL}, *sp_tank[5] = {NULL}, *sp_tank_mvt[5] = {NULL};
@@ -95,89 +94,7 @@ int main(int argc, char *argv[])
     SDL_RenderPresent( renderer );
 
     // Boucle infinie pour bouger un tank
-    while (continuer)
-    {
-        SDL_WaitEvent(&event);
-        if (event.type == SDL_QUIT)
-        {
-            continuer = 0;
-        }
-
-        // Quand on ne bouge pas encore un tank, on clique sur un tank et celui-ci disparaît
-
-        if (event.type == SDL_MOUSEBUTTONDOWN)
-        {
-            int x=0, y=0;
-            SDL_GetMouseState( &x, &y );
-
-            /* ---------debugging----------*/
-
-            printf("%d %d\n",x,y);
-            printf("%d %d\n",x/BLOC,y/BLOC);
-            printf("%d", terrain[x / BLOC][y / BLOC]);
-
-            /* -------------------------- */
-
-            if (mouvement)
-            {
-                if (selection_tank == 1 && tab_tank[x/BLOC][y/BLOC] != TANK1)  // On vérifie qu'on ne clique pas sur un tank
-                {
-                    tab_tank[x / BLOC][y / BLOC] = TANK1;
-                    mouvement=0;
-                    continuer=0;
-                }
-
-                if (selection_tank == 2 && tab_tank[x/BLOC][y/BLOC] != TANK2)  // On vérifie qu'on ne clique pas sur un tank
-                {
-                    tab_tank[x / BLOC][y / BLOC] = TANK2;
-                    mouvement = 0;
-                    continuer=0;
-                }
-            }
-
-            else if (!mouvement)
-            {
-                // On retient quel tank on a selectionné
-
-                if (tab_tank[x/BLOC][y/BLOC] == TANK1)
-                {
-                    selection_tank = TANK1;
-                    mouvement = 1;
-                }
-
-                else if (tab_tank[x/BLOC][y/BLOC] == TANK2)
-                {
-                    selection_tank = TANK2;
-                    mouvement = 1;
-                }
-
-                tab_tank[x / BLOC][y / BLOC] = VIDE;
-            }
-        }
-
-        // Quand on a sélectionné un tank et on bouge la souris, le tank suit nos mouvements
-
-        if (event.type == SDL_MOUSEMOTION && mouvement)
-        {
-            dest_mouvement.x = event.motion.x;
-            dest_mouvement.y = event.motion.y;
-        }
-
-        SDL_RenderClear( renderer );
-        generateTextures(ecran, sp_terrain, sp_tank, tab_tank, terrain);
-
-        if (mouvement && selection_tank == 1)
-        {
-            SDL_RenderCopy( renderer, sp_tank_mvt[TANK1], NULL, &dest_mouvement );
-        }
-
-        if (mouvement && selection_tank == 2)
-        {
-            SDL_RenderCopy( renderer, sp_tank_mvt[TANK2], NULL, &dest_mouvement );
-        }
-
-        SDL_RenderPresent( renderer );
-    }
+    deplacerTank(&joueur, sp_terrain, sp_tank, sp_tank_mvt, tab_tank, terrain);
 
     pause();
     close(ecran, sp_terrain, sp_tank, sp_tank_mvt);
@@ -308,6 +225,98 @@ void generateTextures(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture 
                 SDL_RenderCopy( renderer, sp_tank[TANK2], &source, &destination );
             }
         }
+    }
+}
+
+void deplacerTank(int *joueur, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], SDL_Texture *sp_tank_mvt[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR])
+{
+    /* Cette procédure sert à déplacer les tanks tour par tour */
+
+    int continuer = 1, mouvement = 0;
+    SDL_Event event;    // Utilisé pour la gestion des évènements
+    SDL_Rect dest_mouvement = {0,0,BLOC,BLOC};  // Utilisé pour déplacer un tank et faire suivre la souris au sprite
+
+    while (continuer)
+    {
+        SDL_WaitEvent(&event);
+        if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE)
+        {
+            continuer = 0;
+        }
+
+        // Quand on ne bouge pas encore un tank, on clique sur un tank et celui-ci disparaît
+
+        if (event.type == SDL_MOUSEBUTTONDOWN)
+        {
+            int x=0, y=0;
+            SDL_GetMouseState( &x, &y );
+
+            /* ---------debugging----------*/
+
+            printf("%d %d\n",x,y);
+            printf("%d %d\n",x/BLOC,y/BLOC);
+            printf("%d\n", terrain[x / BLOC][y / BLOC]);
+            printf("%d\n\n", tab_tank[x / BLOC][y / BLOC]);
+
+            /* -------------------------- */
+
+            if (mouvement)
+            {
+                if (*joueur == 1 && tab_tank[x/BLOC][y/BLOC] != TANK1)  // On vérifie qu'on ne clique pas sur un des ses propres tank
+                {
+                    tab_tank[x / BLOC][y / BLOC] = TANK1;
+                    mouvement=0;
+                    *joueur = 2;
+                }
+
+                else if (*joueur == 2 && tab_tank[x/BLOC][y/BLOC] != TANK2)
+                {
+                    tab_tank[x / BLOC][y / BLOC] = TANK2;
+                    mouvement = 0;
+                    *joueur = 1;
+                }
+            }
+
+            else if (!mouvement)
+            {
+                // On retient quel tank on a selectionné
+
+                if (*joueur == 1 && tab_tank[x/BLOC][y/BLOC] == TANK1)
+                {
+                    tab_tank[x / BLOC][y / BLOC] = VIDE;
+                    mouvement = 1;
+                }
+
+                else if (*joueur == 2 && tab_tank[x/BLOC][y/BLOC] == TANK2)
+                {
+                    tab_tank[x / BLOC][y / BLOC] = VIDE;
+                    mouvement = 1;
+                }
+            }
+        }
+
+        // Quand on a sélectionné un tank et on bouge la souris, le tank suit nos mouvements
+
+        if (event.type == SDL_MOUSEMOTION && mouvement)
+        {
+            dest_mouvement.x = event.motion.x;
+            dest_mouvement.y = event.motion.y;
+        }
+
+        SDL_RenderClear( renderer );
+        generateTextures(ecran, sp_terrain, sp_tank, tab_tank, terrain);
+
+        if (mouvement && *joueur == 1)
+        {
+            SDL_RenderCopy( renderer, sp_tank_mvt[TANK1], NULL, &dest_mouvement );
+        }
+
+        if (mouvement && *joueur == 2)
+        {
+            SDL_RenderCopy( renderer, sp_tank_mvt[TANK2], NULL, &dest_mouvement );
+        }
+
+        SDL_RenderPresent( renderer );
     }
 }
 

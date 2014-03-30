@@ -36,7 +36,17 @@ Le joueur blanc a 2 points pour le char du commandant dans la base ennemie et 2 
 
 ##Version
 
-0.1
+0.3
+
+##Installation
+
+ - Installer SDL2 et la librairie SLD_Image pour votre OS et IDE favoris
+ - Ajouter les flags de compilation nécessaires. Exemple pour Windows et Codeblocks:
+ ```
+ -IC:\$PATH\include\SDL2 -IC:\$PATH\include -LC:\$PATH\lib -lSDL2_image -lmingw32 -lSDL2main -lSDL2.dll -luser32 -lgdi32 -lwinmm -ldxguid
+```
+ - Copier les dll pour SDL2 et SDL_Image dans le dossier du projet
+
 
 ##Technologies 
 

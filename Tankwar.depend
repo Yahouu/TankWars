@@ -1,11 +1,12 @@
 # depslib dependency file v1.0
-1395937160 source:f:\documents\documents\code\tankwar\main.c
+1396373872 source:f:\documents\documents\code\tankwar\main.c
 	<stdlib.h>
 	<stdio.h>
 	<time.h>
 	"SDL.h"
+	"SDL_image.h"
 
-1331221694 c:\devpaks\include\sdl2\sdl.h
+1331225294 c:\devpaks\include\sdl2\sdl.h
 	"SDL_main.h"
 	"SDL_stdinc.h"
 	"SDL_assert.h"
@@ -30,12 +31,12 @@
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_main.h
+1331225296 c:\devpaks\include\sdl2\sdl_main.h
 	"SDL_stdinc.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_stdinc.h
+1331225298 c:\devpaks\include\sdl2\sdl_stdinc.h
 	"SDL_config.h"
 	<sys/types.h>
 	<stdio.h>
@@ -62,27 +63,27 @@
 	<stdlib.h>
 	"close_code.h"
 
-1331221700 c:\devpaks\include\sdl2\sdl_config.h
+1331225300 c:\devpaks\include\sdl2\sdl_config.h
 	"SDL_platform.h"
 	<stdarg.h>
 
-1331221698 c:\devpaks\include\sdl2\sdl_platform.h
+1331225298 c:\devpaks\include\sdl2\sdl_platform.h
 	"AvailabilityMacros.h"
 	"TargetConditionals.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221700 c:\devpaks\include\sdl2\begin_code.h
+1331225300 c:\devpaks\include\sdl2\begin_code.h
 
-1331221700 c:\devpaks\include\sdl2\close_code.h
+1331225300 c:\devpaks\include\sdl2\close_code.h
 
-1331221694 c:\devpaks\include\sdl2\sdl_assert.h
+1331225294 c:\devpaks\include\sdl2\sdl_assert.h
 	"SDL_config.h"
 	"begin_code.h"
 	<signal.h>
 	"close_code.h"
 
-1331221694 c:\devpaks\include\sdl2\sdl_atomic.h
+1331225294 c:\devpaks\include\sdl2\sdl_atomic.h
 	"SDL_stdinc.h"
 	"SDL_platform.h"
 	"begin_code.h"
@@ -90,7 +91,7 @@
 	<libkern/OSAtomic.h>
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_audio.h
+1331225296 c:\devpaks\include\sdl2\sdl_audio.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"SDL_endian.h"
@@ -100,24 +101,24 @@
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_error.h
+1331225296 c:\devpaks\include\sdl2\sdl_error.h
 	"SDL_stdinc.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_endian.h
+1331225296 c:\devpaks\include\sdl2\sdl_endian.h
 	"SDL_stdinc.h"
 	<endian.h>
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_mutex.h
+1331225296 c:\devpaks\include\sdl2\sdl_mutex.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_thread.h
+1331225298 c:\devpaks\include\sdl2\sdl_thread.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"SDL_mutex.h"
@@ -125,18 +126,18 @@
 	<process.h>
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_rwops.h
+1331225298 c:\devpaks\include\sdl2\sdl_rwops.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_clipboard.h
+1331225296 c:\devpaks\include\sdl2\sdl_clipboard.h
 	"SDL_stdinc.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_cpuinfo.h
+1331225296 c:\devpaks\include\sdl2\sdl_cpuinfo.h
 	"SDL_stdinc.h"
 	<intrin.h>
 	<intrin.h>
@@ -148,7 +149,7 @@
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_events.h
+1331225296 c:\devpaks\include\sdl2\sdl_events.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"SDL_video.h"
@@ -161,7 +162,7 @@
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_video.h
+1331225298 c:\devpaks\include\sdl2\sdl_video.h
 	"SDL_stdinc.h"
 	"SDL_pixels.h"
 	"SDL_rect.h"
@@ -169,11 +170,11 @@
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_pixels.h
+1331225298 c:\devpaks\include\sdl2\sdl_pixels.h
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_rect.h
+1331225298 c:\devpaks\include\sdl2\sdl_rect.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"SDL_pixels.h"
@@ -181,7 +182,7 @@
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_surface.h
+1331225298 c:\devpaks\include\sdl2\sdl_surface.h
 	"SDL_stdinc.h"
 	"SDL_pixels.h"
 	"SDL_rect.h"
@@ -190,11 +191,11 @@
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_blendmode.h
+1331225296 c:\devpaks\include\sdl2\sdl_blendmode.h
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_keyboard.h
+1331225296 c:\devpaks\include\sdl2\sdl_keyboard.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"SDL_keycode.h"
@@ -202,31 +203,31 @@
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_keycode.h
+1331225296 c:\devpaks\include\sdl2\sdl_keycode.h
 	"SDL_stdinc.h"
 	"SDL_scancode.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_scancode.h
+1331225298 c:\devpaks\include\sdl2\sdl_scancode.h
 	"SDL_stdinc.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_mouse.h
+1331225296 c:\devpaks\include\sdl2\sdl_mouse.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"SDL_video.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_joystick.h
+1331225296 c:\devpaks\include\sdl2\sdl_joystick.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_quit.h
+1331225298 c:\devpaks\include\sdl2\sdl_quit.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_gesture.h
+1331225296 c:\devpaks\include\sdl2\sdl_gesture.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"SDL_video.h"
@@ -234,49 +235,55 @@
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_touch.h
+1331225298 c:\devpaks\include\sdl2\sdl_touch.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"SDL_video.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_hints.h
+1331225296 c:\devpaks\include\sdl2\sdl_hints.h
 	"SDL_stdinc.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_loadso.h
+1331225296 c:\devpaks\include\sdl2\sdl_loadso.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221696 c:\devpaks\include\sdl2\sdl_log.h
+1331225296 c:\devpaks\include\sdl2\sdl_log.h
 	"SDL_stdinc.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_power.h
+1331225298 c:\devpaks\include\sdl2\sdl_power.h
 	"SDL_stdinc.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_render.h
+1331225298 c:\devpaks\include\sdl2\sdl_render.h
 	"SDL_stdinc.h"
 	"SDL_rect.h"
 	"SDL_video.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_timer.h
+1331225298 c:\devpaks\include\sdl2\sdl_timer.h
 	"SDL_stdinc.h"
 	"SDL_error.h"
 	"begin_code.h"
 	"close_code.h"
 
-1331221698 c:\devpaks\include\sdl2\sdl_version.h
+1331225298 c:\devpaks\include\sdl2\sdl_version.h
 	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1331301464 c:\devpaks\include\sdl2\sdl_image.h
+	"SDL.h"
+	"SDL_version.h"
 	"begin_code.h"
 	"close_code.h"
 

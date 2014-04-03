@@ -36,7 +36,7 @@ Le joueur blanc a 2 points pour le char du commandant dans la base ennemie et 2 
 
 ##Version
 
-0.5
+0.6
 
 ##Installation
 

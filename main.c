@@ -22,17 +22,17 @@
 
 enum liste_terrain {NORMAL, MINE, POLLUE, BASE1, BASE2};
 enum liste_tank {VIDE, TANK1, TANK2, TANK1_CMD, TANK2_CMD};
-enum list_deplacement {INVALIDE, VALIDE, ENNEMI};
+enum liste_deplacement {INVALIDE, VALIDE, ENNEMI};
 
 // Prototypes
 
 int initialisation();
-void loadTextures( SDL_Texture *sp_terrain[],SDL_Texture *sp_tank[],SDL_Texture *sp_tank_mvt[]);
-void generateTextures(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR]);
-void collision(int *joueur, int *x, int *y, int tab_tank[][HAUTEUR], int terrain[][HAUTEUR], int deplacement_possibles[][HAUTEUR]);
-void deplacerTank(int *joueur, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], SDL_Texture *sp_tank_mvt[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR]);
+void loadTextures( SDL_Texture *tex_terrain[],SDL_Texture *tex_tank[],SDL_Texture *tex_tank_mvt[]);
+void generateTextures(SDL_Window *ecran, SDL_Texture *tex_terrain[], SDL_Texture *tex_tank[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR]);
+void collision(int joueur, int x, int y, int tab_tank[][HAUTEUR], int terrain[][HAUTEUR], int deplacement_possibles[][HAUTEUR]);
+void deplacerTank(int *joueur, SDL_Texture *tex_terrain[], SDL_Texture *tex_tank[], SDL_Texture *tex_tank_mvt[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR]);
 void pause();
-void close(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[],SDL_Texture *sp_tank_mvt[]);
+void close(SDL_Window *ecran, SDL_Texture *tex_terrain[], SDL_Texture *tex_tank[],SDL_Texture *tex_tank_mvt[]);
 
 // Fenêtre de jeu et renderer
 
@@ -88,20 +88,20 @@ int main(int argc, char *argv[])
 
     // On charge les textures
 
-    SDL_Texture *sp_terrain[5] = {NULL}, *sp_tank[5] = {NULL}, *sp_tank_mvt[5] = {NULL};
-    loadTextures(sp_terrain, sp_tank, sp_tank_mvt);
+    SDL_Texture *tex_terrain[5] = {NULL}, *tex_tank[5] = {NULL}, *tex_tank_mvt[5] = {NULL};
+    loadTextures(tex_terrain, tex_tank, tex_tank_mvt);
 
     // On génère notre terrain pour la première fois
 
     SDL_RenderClear( renderer );
-    generateTextures(ecran, sp_terrain, sp_tank, tab_tank, terrain);
+    generateTextures(ecran, tex_terrain, tex_tank, tab_tank, terrain);
     SDL_RenderPresent( renderer );
 
     // Boucle infinie pour bouger un tank
-    deplacerTank(&joueur, sp_terrain, sp_tank, sp_tank_mvt, tab_tank, terrain);
+    deplacerTank(&joueur, tex_terrain, tex_tank, tex_tank_mvt, tab_tank, terrain);
 
     pause();
-    close(ecran, sp_terrain, sp_tank, sp_tank_mvt);
+    close(ecran, tex_terrain, tex_tank, tex_tank_mvt);
 
     return 0;
 }
@@ -167,26 +167,26 @@ int initialisation()
 
 }
 
-void loadTextures(SDL_Texture *sp_terrain[],SDL_Texture *sp_tank[],SDL_Texture *sp_tank_mvt[])
+void loadTextures(SDL_Texture *tex_terrain[],SDL_Texture *tex_tank[],SDL_Texture *tex_tank_mvt[])
 {
     /*  Cette procédure charge toutes nos textures en mémoire.*/
 
-    sp_terrain[NORMAL] = IMG_LoadTexture( renderer, "./img/normal.png");
-    sp_terrain[MINE] = IMG_LoadTexture( renderer, "./img/mine.png");
-    sp_terrain[POLLUE] = IMG_LoadTexture( renderer, "./img/toxic.png");
-    sp_terrain[BASE1] = IMG_LoadTexture( renderer, "./img/base1.png");
-    sp_terrain[BASE2] = IMG_LoadTexture( renderer, "./img/base2.png");
-    sp_tank[TANK1] = IMG_LoadTexture( renderer, "./img/tankar.png");
-    sp_tank[TANK2] = IMG_LoadTexture( renderer, "./img/tankbr.png");
-    sp_tank[TANK1_CMD] = IMG_LoadTexture( renderer, "./img/commandar.png");
-    sp_tank[TANK2_CMD] = IMG_LoadTexture( renderer, "./img/commandbr.png");
-    sp_tank_mvt[TANK1] = IMG_LoadTexture( renderer, "./img/tankar.png");
-    sp_tank_mvt[TANK2] = IMG_LoadTexture( renderer, "./img/tankbr.png");
-    sp_tank_mvt[TANK1_CMD] = IMG_LoadTexture( renderer, "./img/commandar.png");
-    sp_tank_mvt[TANK2_CMD] = IMG_LoadTexture( renderer, "./img/commandbr.png");
+    tex_terrain[NORMAL] = IMG_LoadTexture( renderer, "./img/normal.png");
+    tex_terrain[MINE] = IMG_LoadTexture( renderer, "./img/mine.png");
+    tex_terrain[POLLUE] = IMG_LoadTexture( renderer, "./img/toxic.png");
+    tex_terrain[BASE1] = IMG_LoadTexture( renderer, "./img/base1.png");
+    tex_terrain[BASE2] = IMG_LoadTexture( renderer, "./img/base2.png");
+    tex_tank[TANK1] = IMG_LoadTexture( renderer, "./img/tankar.png");
+    tex_tank[TANK2] = IMG_LoadTexture( renderer, "./img/tankbr.png");
+    tex_tank[TANK1_CMD] = IMG_LoadTexture( renderer, "./img/commandar.png");
+    tex_tank[TANK2_CMD] = IMG_LoadTexture( renderer, "./img/commandbr.png");
+    tex_tank_mvt[TANK1] = IMG_LoadTexture( renderer, "./img/tankar.png");
+    tex_tank_mvt[TANK2] = IMG_LoadTexture( renderer, "./img/tankbr.png");
+    tex_tank_mvt[TANK1_CMD] = IMG_LoadTexture( renderer, "./img/commandar.png");
+    tex_tank_mvt[TANK2_CMD] = IMG_LoadTexture( renderer, "./img/commandbr.png");
 }
 
-void generateTextures(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR])
+void generateTextures(SDL_Window *ecran, SDL_Texture *tex_terrain[], SDL_Texture *tex_tank[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR])
 {
     /*  Cette procédure génère nos textures dans notre fenêtre de jeu */
 
@@ -203,167 +203,167 @@ void generateTextures(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture 
             switch(terrain[i][j])
             {
                 case 0:
-                    SDL_RenderCopy( renderer, sp_terrain[NORMAL], NULL, &destination );
+                    SDL_RenderCopy( renderer, tex_terrain[NORMAL], NULL, &destination );
                     break;
 
                 case 1:
-                    SDL_RenderCopy( renderer, sp_terrain[MINE], NULL, &destination );
+                    SDL_RenderCopy( renderer, tex_terrain[MINE], NULL, &destination );
                     break;
 
                 case 2:
-                    SDL_RenderCopy( renderer, sp_terrain[POLLUE], NULL, &destination );
+                    SDL_RenderCopy( renderer, tex_terrain[POLLUE], NULL, &destination );
                     break;
 
                 case 3:
-                    SDL_RenderCopy( renderer, sp_terrain[BASE1], NULL, &destination );
+                    SDL_RenderCopy( renderer, tex_terrain[BASE1], NULL, &destination );
                     break;
 
                 case 4:
-                    SDL_RenderCopy( renderer, sp_terrain[BASE2], NULL, &destination );
+                    SDL_RenderCopy( renderer, tex_terrain[BASE2], NULL, &destination );
                     break;
             }
 
             switch(tab_tank[i][j])
             {
                 case 1:
-                    SDL_RenderCopy( renderer, sp_tank[TANK1], &source, &destination );
+                    SDL_RenderCopy( renderer, tex_tank[TANK1], &source, &destination );
                     break;
 
                 case 2:
-                    SDL_RenderCopy( renderer, sp_tank[TANK2], &source, &destination );
+                    SDL_RenderCopy( renderer, tex_tank[TANK2], &source, &destination );
                     break;
 
                 case 3:
-                    SDL_RenderCopy( renderer, sp_tank[TANK1_CMD], &source, &destination );
+                    SDL_RenderCopy( renderer, tex_tank[TANK1_CMD], &source, &destination );
                     break;
 
                 case 4:
-                    SDL_RenderCopy( renderer, sp_tank[TANK2_CMD], &source, &destination );
+                    SDL_RenderCopy( renderer, tex_tank[TANK2_CMD], &source, &destination );
                     break;
             }
         }
     }
 }
 
-void collision(int *joueur, int *x, int *y, int tab_tank[][HAUTEUR], int terrain[][HAUTEUR], int deplacement_possibles[][HAUTEUR])
+void collision(int joueur, int x, int y, int tab_tank[][HAUTEUR], int terrain[][HAUTEUR], int deplacement_possibles[][HAUTEUR])
 {
     memset(deplacement_possibles, 0, HAUTEUR*LARGEUR*sizeof deplacement_possibles[0][0]);   // Très utile pour réinitialiser notre tableau
     int i,j;
 
     /* VERS LE BAS */
 
-    for (i=*y; i<HAUTEUR; i++)
+    for (i=y; i<HAUTEUR; i++)
     {
-        if ((i+1<HAUTEUR && *joueur == 1 && tab_tank[i+1][*x] == TANK1) ||  // i+1 sinon on detecte le tank qu'on vient de sélectionner...
-            (i+1<HAUTEUR && *joueur == 2 && tab_tank[i+1][*x] == TANK2) ||  // ... en faisant attention à ne pas sortir du tableau
-            terrain[i][*x] == MINE ||
-            terrain[i][*x] == POLLUE)
+        if ((i+1<HAUTEUR && joueur == 1 && tab_tank[i+1][x] == TANK1) ||  // i+1 sinon on detecte le tank qu'on vient de sélectionner...
+            (i+1<HAUTEUR && joueur == 2 && tab_tank[i+1][x] == TANK2) ||  // ... en faisant attention à ne pas sortir du tableau
+            terrain[i][x] == MINE ||
+            terrain[i][x] == POLLUE)
         {
             break;
         }
 
-        else if ((*joueur == 1 && tab_tank[i][*x] == TANK2) ||
-                 (*joueur == 2 && tab_tank[i][*x] == TANK1))
+        else if ((joueur == 1 && tab_tank[i][x] == TANK2) ||
+                 (joueur == 2 && tab_tank[i][x] == TANK1))
         {
-            deplacement_possibles[i][*x] = 1;
+            deplacement_possibles[i][x] = 1;
             break;
         }
 
         else
         {
-            deplacement_possibles[i][*x] = 1;
+            deplacement_possibles[i][x] = 1;
         }
     }
 
     /* VERS LE HAUT */
 
-    for (i=*y; i>=0; i--)
+    for (i=y; i>=0; i--)
     {
-        if ((i-1>=0 && *joueur == 1 && tab_tank[i-1][*x] == TANK1) ||
-            (i-1>=0 && *joueur == 2 && tab_tank[i-1][*x] == TANK2) ||
-            terrain[i][*x] == MINE ||
-            terrain[i][*x] == POLLUE)
+        if ((i-1>=0 && joueur == 1 && tab_tank[i-1][x] == TANK1) ||
+            (i-1>=0 && joueur == 2 && tab_tank[i-1][x] == TANK2) ||
+            terrain[i][x] == MINE ||
+            terrain[i][x] == POLLUE)
         {
             break;
         }
 
-        else if ((*joueur == 1 && tab_tank[i][*x] == TANK2) ||
-                 (*joueur == 2 && tab_tank[i][*x] == TANK1))
+        else if ((joueur == 1 && tab_tank[i][x] == TANK2) ||
+                 (joueur == 2 && tab_tank[i][x] == TANK1))
         {
-            deplacement_possibles[i][*x] = 1;
+            deplacement_possibles[i][x] = 1;
             break;
         }
 
         else
         {
-            deplacement_possibles[i][*x] = 1;
+            deplacement_possibles[i][x] = 1;
         }
     }
 
     /* VERS LA GAUCHE */
 
-    for (i=*x; i>=0; i--)
+    for (i=x; i>=0; i--)
     {
-        if ((i-1>=0 && *joueur == 1 && tab_tank[*y][i-1] == TANK1) ||
-            (i-1>=0 && *joueur == 2 && tab_tank[*y][i-1] == TANK2) ||
-            terrain[*y][i] == MINE ||
-            terrain[*y][i] == POLLUE)
+        if ((i-1>=0 && joueur == 1 && tab_tank[y][i-1] == TANK1) ||
+            (i-1>=0 && joueur == 2 && tab_tank[y][i-1] == TANK2) ||
+            terrain[y][i] == MINE ||
+            terrain[y][i] == POLLUE)
         {
             break;
         }
 
-        else if ((*joueur == 1 && tab_tank[*y][i] == TANK2) ||
-                 (*joueur == 2 && tab_tank[*y][i] == TANK1))
+        else if ((joueur == 1 && tab_tank[y][i] == TANK2) ||
+                 (joueur == 2 && tab_tank[y][i] == TANK1))
         {
-            deplacement_possibles[*y][i] = 1;
+            deplacement_possibles[y][i] = 1;
             break;
         }
 
         else
         {
-            deplacement_possibles[*y][i] = 1;
+            deplacement_possibles[y][i] = 1;
         }
     }
 
     /* VERS LA DROITE */
 
-    for (i=*x; i<LARGEUR; i++)
+    for (i=x; i<LARGEUR; i++)
     {
-        if ((i+1<LARGEUR && *joueur == 1 && tab_tank[*y][i+1] == TANK1) ||
-            (i+1<LARGEUR && *joueur == 2 && tab_tank[*y][i+1] == TANK2) ||
-            terrain[*y][i] == MINE ||
-            terrain[*y][i] == POLLUE)
+        if ((i+1<LARGEUR && joueur == 1 && tab_tank[y][i+1] == TANK1) ||
+            (i+1<LARGEUR && joueur == 2 && tab_tank[y][i+1] == TANK2) ||
+            terrain[y][i] == MINE ||
+            terrain[y][i] == POLLUE)
         {
             break;
         }
 
-        else if ((*joueur == 1 && tab_tank[*y][i] == TANK2) ||
-                 (*joueur == 2 && tab_tank[*y][i] == TANK1))
+        else if ((joueur == 1 && tab_tank[y][i] == TANK2) ||
+                 (joueur == 2 && tab_tank[y][i] == TANK1))
         {
-            deplacement_possibles[*y][i] = 1;
+            deplacement_possibles[y][i] = 1;
             break;
         }
 
         else
         {
-            deplacement_possibles[*y][i] = 1;
+            deplacement_possibles[y][i] = 1;
         }
     }
 
     /* Déplacement en diagonale vers la droite et vers le bas de la position actuelle */
 
-    for (i=*y, j=*x; i<HAUTEUR && j<LARGEUR; i++,j++)
+    for (i=y, j=x; i<HAUTEUR && j<LARGEUR; i++,j++)
     {
-        if ((i+1<HAUTEUR && j+1<LARGEUR && *joueur == 1 && tab_tank[i+1][j+1] == TANK1) ||
-            (i+1<HAUTEUR && j+1<LARGEUR && *joueur == 2 && tab_tank[i+1][j+1] == TANK2) ||
+        if ((i+1<HAUTEUR && j+1<LARGEUR && joueur == 1 && tab_tank[i+1][j+1] == TANK1) ||
+            (i+1<HAUTEUR && j+1<LARGEUR && joueur == 2 && tab_tank[i+1][j+1] == TANK2) ||
             terrain[i][j] == MINE ||
             terrain[i][j] == POLLUE)
         {
             break;
         }
 
-        else if ((*joueur == 1 && tab_tank[i][j] == TANK2) ||
-                 (*joueur == 2 && tab_tank[i][j] == TANK1))
+        else if ((joueur == 1 && tab_tank[i][j] == TANK2) ||
+                 (joueur == 2 && tab_tank[i][j] == TANK1))
         {
             deplacement_possibles[i][j] = 1;
             break;
@@ -377,18 +377,18 @@ void collision(int *joueur, int *x, int *y, int tab_tank[][HAUTEUR], int terrain
 
     /* Déplacement en diagonale vers la droite et vers le haut de la position actuelle */
 
-    for (i=*y, j=*x; i>=0 && j<LARGEUR; i--,j++)
+    for (i=y, j=x; i>=0 && j<LARGEUR; i--,j++)
     {
-        if ((i-1>=0 && j+1<LARGEUR && *joueur == 1 && tab_tank[i-1][j+1] == TANK1) ||
-            (i-1>=0 && j+1<LARGEUR && *joueur == 2 && tab_tank[i-1][j+1] == TANK2) ||
+        if ((i-1>=0 && j+1<LARGEUR && joueur == 1 && tab_tank[i-1][j+1] == TANK1) ||
+            (i-1>=0 && j+1<LARGEUR && joueur == 2 && tab_tank[i-1][j+1] == TANK2) ||
             terrain[i][j] == MINE ||
             terrain[i][j] == POLLUE)
         {
             break;
         }
 
-        else if ((*joueur == 1 && tab_tank[i][j] == TANK2) ||
-                 (*joueur == 2 && tab_tank[i][j] == TANK1))
+        else if ((joueur == 1 && tab_tank[i][j] == TANK2) ||
+                 (joueur == 2 && tab_tank[i][j] == TANK1))
         {
             deplacement_possibles[i][j] = 1;
             break;
@@ -402,18 +402,18 @@ void collision(int *joueur, int *x, int *y, int tab_tank[][HAUTEUR], int terrain
 
     /* Déplacement en diagonale vers la gauche et vers le bas de la position actuelle */
 
-    for (i=*y, j=*x; i<HAUTEUR && j>=0; i++,j--)
+    for (i=y, j=x; i<HAUTEUR && j>=0; i++,j--)
     {
-        if ((i+1<HAUTEUR && j-1>=0 && *joueur == 1 && tab_tank[i+1][j-1] == TANK1) ||
-            (i+1<HAUTEUR && j-1>=0 && *joueur == 2 && tab_tank[i+1][j-1] == TANK2) ||
+        if ((i+1<HAUTEUR && j-1>=0 && joueur == 1 && tab_tank[i+1][j-1] == TANK1) ||
+            (i+1<HAUTEUR && j-1>=0 && joueur == 2 && tab_tank[i+1][j-1] == TANK2) ||
             terrain[i][j] == MINE ||
             terrain[i][j] == POLLUE)
         {
             break;
         }
 
-        else if ((*joueur == 1 && tab_tank[i][j] == TANK2) ||
-                 (*joueur == 2 && tab_tank[i][j] == TANK1))
+        else if ((joueur == 1 && tab_tank[i][j] == TANK2) ||
+                 (joueur == 2 && tab_tank[i][j] == TANK1))
         {
             deplacement_possibles[i][j] = 1;
             break;
@@ -427,18 +427,18 @@ void collision(int *joueur, int *x, int *y, int tab_tank[][HAUTEUR], int terrain
 
     /* Déplacement en diagonale vers la gauche et vers le haut de la position actuelle */
 
-    for (i=*y, j=*x; i>=0 && j>=0; i--,j--)
+    for (i=y, j=x; i>=0 && j>=0; i--,j--)
     {
-        if ((i-1 >=0 && j-1>=0 && *joueur == 1 && tab_tank[i-1][j-1] == TANK1) ||
-            (i-1 >=0 && j-1>=0 && *joueur == 2 && tab_tank[i-1][j-1] == TANK2) ||
+        if ((i-1 >=0 && j-1>=0 && joueur == 1 && tab_tank[i-1][j-1] == TANK1) ||
+            (i-1 >=0 && j-1>=0 && joueur == 2 && tab_tank[i-1][j-1] == TANK2) ||
             terrain[i][j] == MINE ||
             terrain[i][j] == POLLUE)
         {
             break;
         }
 
-        else if ((*joueur == 1 && tab_tank[i][j] == TANK2) ||
-                 (*joueur == 2 && tab_tank[i][j] == TANK1))
+        else if ((joueur == 1 && tab_tank[i][j] == TANK2) ||
+                 (joueur == 2 && tab_tank[i][j] == TANK1))
         {
             deplacement_possibles[i][j] = 1;
             break;
@@ -452,7 +452,7 @@ void collision(int *joueur, int *x, int *y, int tab_tank[][HAUTEUR], int terrain
 }
 
 
-void deplacerTank(int *joueur, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], SDL_Texture *sp_tank_mvt[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR])
+void deplacerTank(int *joueur, SDL_Texture *tex_terrain[], SDL_Texture *tex_tank[], SDL_Texture *tex_tank_mvt[], int tab_tank[][HAUTEUR], int terrain[][HAUTEUR])
 {
     /* Cette procédure sert à déplacer les tanks tour par tour */
 
@@ -511,7 +511,7 @@ void deplacerTank(int *joueur, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[]
                 if (*joueur == 1 && tab_tank[x][y] == TANK1)
                 {
                     printf("x_tmp:%d y_tmp:%d\n",x,y);
-                    collision(joueur, &x, &y, tab_tank, terrain, deplacement_possibles);
+                    collision(*joueur, x, y, tab_tank, terrain, deplacement_possibles);
 
                     /* ------- Debugging ------- */
 
@@ -533,7 +533,7 @@ void deplacerTank(int *joueur, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[]
                 else if (*joueur == 2 && tab_tank[x][y] == TANK2)
                 {
                     printf("x_tmp:%d y_tmp:%d\n",x_tmp,y_tmp);
-                    collision(joueur, &x, &y, tab_tank, terrain, deplacement_possibles);
+                    collision(*joueur, x, y, tab_tank, terrain, deplacement_possibles);
 
                     /* ------- Debugging ------- */
 
@@ -581,16 +581,16 @@ void deplacerTank(int *joueur, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[]
         }
 
         SDL_RenderClear( renderer );
-        generateTextures(ecran, sp_terrain, sp_tank, tab_tank, terrain);
+        generateTextures(ecran, tex_terrain, tex_tank, tab_tank, terrain);
 
         if (mouvement && *joueur == 1)
         {
-            SDL_RenderCopy( renderer, sp_tank_mvt[TANK1], NULL, &dest_mouvement );
+            SDL_RenderCopy( renderer, tex_tank_mvt[TANK1], NULL, &dest_mouvement );
         }
 
         if (mouvement && *joueur == 2)
         {
-            SDL_RenderCopy( renderer, sp_tank_mvt[TANK2], NULL, &dest_mouvement );
+            SDL_RenderCopy( renderer, tex_tank_mvt[TANK2], NULL, &dest_mouvement );
         }
 
         SDL_RenderPresent( renderer );
@@ -626,7 +626,7 @@ void pause()
     }
 }
 
-void close(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[], SDL_Texture *sp_tank_mvt[])
+void close(SDL_Window *ecran, SDL_Texture *tex_terrain[], SDL_Texture *tex_tank[], SDL_Texture *tex_tank_mvt[])
 {
     /* Cette procédure vide la mémoire, pointe nos pointeurs sur NULL et quitte SDL */
 
@@ -634,13 +634,13 @@ void close(SDL_Window *ecran, SDL_Texture *sp_terrain[], SDL_Texture *sp_tank[],
 
     for (i = 0 ; i < 5 ; i++)
     {
-        SDL_DestroyTexture( sp_terrain[i] );
-        SDL_DestroyTexture(sp_tank[i]);
-        SDL_DestroyTexture(sp_tank_mvt[i]);
+        SDL_DestroyTexture( tex_terrain[i] );
+        SDL_DestroyTexture(tex_tank[i]);
+        SDL_DestroyTexture(tex_tank_mvt[i]);
     }
-    sp_terrain = {NULL};
-    sp_tank = {NULL};
-    sp_tank_mvt = {NULL};
+    tex_terrain = {NULL};
+    tex_tank = {NULL};
+    tex_tank_mvt = {NULL};
     SDL_DestroyRenderer( renderer );
     SDL_DestroyWindow(ecran);
     renderer= NULL;

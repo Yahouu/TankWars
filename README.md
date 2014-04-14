@@ -2,7 +2,7 @@
 
 ##Objectifs
 
-La Bataille de chars est un jeu moderne polonais qui est joué sur un plateau carré de 11x11 cases. Chaque joueur gère son armée de 14 chars - 13 normaux et un, le char du commandant, qui suffisamment résistant pour se déplacer à travers le terrain contaminé par des armes chimiques. Au départ, les chars des commandants sont situés dans le coin en bas à droite (du point de vue de chaque joueur) et les chars normaux occupent la zone restante de la base (cases bleues pour le joueur blanc et case verte pour le joueur noir).
+La Bataille de chars est un jeu moderne polonais qui est joué sur un plateau carré de 11x11 cases. Chaque joueur gère son armée de 14 chars - 13 normaux et un, le char du commandant, qui est suffisamment résistant pour se déplacer à travers le terrain contaminé par des armes chimiques. Au départ, les chars des commandants sont situés dans le coin en bas à droite (du point de vue de chaque joueur) et les chars normaux occupent la zone restante de la base (cases bleues pour le joueur blanc et case verte pour le joueur noir).
 
 Le but est d'occuper la base ennemie par autant de ses chars que possible. Le joueur qui obtient le plus de points est le gagnant. Le nombre de points correspond aux événements du jeu et seront décrits à la section finale de cet article.
 

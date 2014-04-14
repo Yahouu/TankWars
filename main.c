@@ -71,7 +71,7 @@ typedef struct struct_textures{
 int initialisation();
 void loadTextures( struct_textures *textures );
 void generateTextures( struct_textures *textures, struct_terrain terrain );
-void collision(int *joueur, int x, int y, struct_terrain terrain, int deplacement_possibles[][HAUTEUR]);
+void collision(int joueur, int x, int y, struct_terrain terrain, int deplacement_possibles[][HAUTEUR]);
 void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrain);
 void pause();
 void close( struct_textures *textures );
@@ -513,7 +513,7 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
                 if (*joueur == 1 && terrain->tab_tank[y][x] == TANK1)
                 {
                     printf("x_tmp:%d y_tmp:%d\n",x,y);
-                    //collision( joueur, x, y, *terrain, deplacement_possibles );
+                    collision( *joueur, x, y, *terrain, deplacement_possibles );
 
                     /* ------- Debugging ------- */
 
@@ -534,7 +534,7 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
                 else if (*joueur == 2 && terrain->tab_tank[y][x] == TANK2)
                 {
                     printf("x_tmp:%d y_tmp:%d\n",x_tmp,y_tmp);
-                    //collision( joueur, x, y, *terrain, deplacement_possibles );
+                    collision( *joueur, x, y, *terrain, deplacement_possibles );
 
                     /* ------- Debugging ------- */
 

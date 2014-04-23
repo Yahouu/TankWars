@@ -6,7 +6,7 @@ La Bataille de chars est un jeu moderne polonais qui est joué sur un plateau ca
 
 Le but est d'occuper la base ennemie par autant de ses chars que possible. Le joueur qui obtient le plus de points est le gagnant. Le nombre de points correspond aux événements du jeu et seront décrits à la section finale de cet article.
 
-![alt text](http://i.imgur.com/Vr6V95N.jpg "Plateau de jeu")
+![alt text](http://sanic.violates.me/i/nvSlaf.jpg "Plateau de jeu")
 
 ##Buts du jeu
 
@@ -40,7 +40,7 @@ Le joueur blanc a 2 points pour le char du commandant dans la base ennemie et 2 
 
 ##Installation
 
- - Installer SDL2 et la librairie SLD_Image pour votre OS et IDE favoris
+ - Installer SDL2 et la librairie SDL_Image pour votre OS et IDE favoris
  - Ajouter les flags de compilation nécessaires. Exemple pour Windows et Codeblocks:
  ```
  -IC:\$PATH\include\SDL2 -IC:\$PATH\include -LC:\$PATH\lib -lSDL2_image -lmingw32 -lSDL2main -lSDL2.dll -luser32 -lgdi32 -lwinmm -ldxguid

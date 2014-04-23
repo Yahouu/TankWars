@@ -1,5 +1,5 @@
 /** Projet de programmation en C - 1ère année
- *  Tank Wars
+ *  TankWar
  *  Construit avec SDL 2.0
  */
 
@@ -72,7 +72,8 @@ typedef struct struct_textures{
 int initialisation();
 void loadTextures( struct_textures *textures );
 void generateTextures( struct_textures *textures, struct_terrain terrain, int deplacement_possibles[][HAUTEUR] );
-void collision(int joueur, int x, int y, struct_terrain terrain, int deplacement_possibles[][HAUTEUR]);
+void deplacementsPossibles(int joueur, int x, int y, struct_terrain terrain, int deplacement_possibles[][HAUTEUR], int selection_tank);
+int collision(int joueur, int x, int y, int i, int j, struct_terrain terrain, int deplacement_possibles[][HAUTEUR], int selection_tank);
 void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrain, int deplacement_possibles[][HAUTEUR]);
 void pause();
 void close( struct_textures *textures );
@@ -253,7 +254,40 @@ void generateTextures( struct_textures *textures, struct_terrain terrain, int de
     }
 }
 
-void collision( int joueur, int x, int y, struct_terrain terrain, int deplacement_possibles[][HAUTEUR] )
+int collision(int joueur, int x, int y, int i, int j, struct_terrain terrain, int deplacement_possibles[][HAUTEUR], int selection_tank)
+{
+    if ((joueur == 1 && terrain.tab_tank[i][j] == TANK1)
+        || (joueur == 2 && terrain.tab_tank[i][j] == TANK2)
+        || terrain.tab_terrain[i][j] == MINE
+        || (
+            ((selection_tank != TANK1_CMD) || (selection_tank != TANK2_CMD)) // Les tanks commandant peuvent se déplacer en zone polluée
+            && terrain.tab_terrain[i][j] == POLLUE
+           )
+        )
+    {
+        return 0;
+    }
+
+    else if ((terrain.tab_terrain[y][x] != POLLUE)
+             && (
+                 (joueur == 1 && terrain.tab_tank[i][j] == TANK2)
+                 || (joueur == 2 && terrain.tab_tank[i][j] == TANK1)
+                )
+            )
+    {
+        deplacement_possibles[i][j] = 1;
+        return 0;
+    }
+
+    else
+    {
+        deplacement_possibles[i][j] = 1;
+    }
+
+    return 1;
+}
+
+void deplacementsPossibles( int joueur, int x, int y, struct_terrain terrain, int deplacement_possibles[][HAUTEUR], int selection_tank )
 {
     int i,j;
 
@@ -263,24 +297,9 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     for (i=y+1; i<HAUTEUR; i++)
     {
-        if ((joueur == 1 && terrain.tab_tank[i][x] == TANK1)
-            || (joueur == 2 && terrain.tab_tank[i][x] == TANK2)
-            || terrain.tab_terrain[i][x] == MINE
-            || terrain.tab_terrain[i][x] == POLLUE)
+        if (collision( joueur, x, y, i, x, terrain, deplacement_possibles, selection_tank) == 0)
         {
             break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][x] == TANK2)
-                 || (joueur == 2 && terrain.tab_tank[i][x] == TANK1))
-        {
-            deplacement_possibles[i][x] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][x] = 1;
         }
     }
 
@@ -288,24 +307,9 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     for (i=y-1; i>=0; i--)
     {
-        if ((joueur == 1 && terrain.tab_tank[i][x] == TANK1)
-            || (joueur == 2 && terrain.tab_tank[i][x] == TANK2)
-            || terrain.tab_terrain[i][x] == MINE
-            || terrain.tab_terrain[i][x] == POLLUE)
+        if (collision( joueur, x, y, i, x, terrain, deplacement_possibles, selection_tank) == 0)
         {
             break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][x] == TANK2)
-                 || (joueur == 2 && terrain.tab_tank[i][x] == TANK1))
-        {
-            deplacement_possibles[i][x] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][x] = 1;
         }
     }
 
@@ -313,24 +317,9 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     for (i=x-1; i>=0; i--)
     {
-        if ((joueur == 1 && terrain.tab_tank[y][i] == TANK1)
-            || (joueur == 2 && terrain.tab_tank[y][i] == TANK2)
-            || terrain.tab_terrain[y][i] == MINE
-            || terrain.tab_terrain[y][i] == POLLUE)
+        if (collision( joueur, x, y, y, i, terrain, deplacement_possibles, selection_tank) == 0)
         {
             break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[y][i] == TANK2)
-                 || (joueur == 2 && terrain.tab_tank[y][i] == TANK1))
-        {
-            deplacement_possibles[y][i] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[y][i] = 1;
         }
     }
 
@@ -338,24 +327,9 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     for (i=x+1; i<LARGEUR; i++)
     {
-        if ((joueur == 1 && terrain.tab_tank[y][i] == TANK1)
-            || (joueur == 2 && terrain.tab_tank[y][i] == TANK2)
-            || terrain.tab_terrain[y][i] == MINE
-            || terrain.tab_terrain[y][i] == POLLUE)
+        if (collision( joueur, x, y, y, i, terrain, deplacement_possibles, selection_tank) == 0)
         {
             break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[y][i] == TANK2)
-                 || (joueur == 2 && terrain.tab_tank[y][i] == TANK1))
-        {
-            deplacement_possibles[y][i] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[y][i] = 1;
         }
     }
 
@@ -363,24 +337,9 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     for (i=y+1, j=x+1; i<HAUTEUR && j<LARGEUR; i++,j++)
     {
-        if ((joueur == 1 && terrain.tab_tank[i][j] == TANK1)
-            || (joueur == 2 && terrain.tab_tank[i][j] == TANK2)
-            || terrain.tab_terrain[i][j] == MINE
-            || terrain.tab_terrain[i][j] == POLLUE)
+        if (collision( joueur, x, y, i, j, terrain, deplacement_possibles, selection_tank) == 0)
         {
             break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2)
-                 || (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
-        {
-            deplacement_possibles[i][j] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][j] = 1;
         }
     }
 
@@ -388,24 +347,9 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     for (i=y-1, j=x+1; i>=0 && j<LARGEUR; i--,j++)
     {
-        if ((joueur == 1 && terrain.tab_tank[i][j] == TANK1)
-            || (joueur == 2 && terrain.tab_tank[i][j] == TANK2)
-            || terrain.tab_terrain[i][j] == MINE
-            || terrain.tab_terrain[i][j] == POLLUE)
+        if (collision( joueur, x, y, i, j, terrain, deplacement_possibles, selection_tank) == 0)
         {
             break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2)
-                 || (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
-        {
-            deplacement_possibles[i][j] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][j] = 1;
         }
     }
 
@@ -413,24 +357,9 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     for (i=y+1, j=x-1; i<HAUTEUR && j>=0; i++,j--)
     {
-        if ((joueur == 1 && terrain.tab_tank[i][j] == TANK1)
-            || (joueur == 2 && terrain.tab_tank[i][j] == TANK2)
-            || terrain.tab_terrain[i][j] == MINE
-            || terrain.tab_terrain[i][j] == POLLUE)
+        if (collision( joueur, x, y, i, j, terrain, deplacement_possibles, selection_tank) == 0)
         {
             break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2)
-                 || (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
-        {
-            deplacement_possibles[i][j] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][j] = 1;
         }
     }
 
@@ -438,24 +367,9 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     for (i=y-1, j=x-1; i>=0 && j>=0; i--,j--)
     {
-        if ((joueur == 1 && terrain.tab_tank[i][j] == TANK1)
-            || (joueur == 2 && terrain.tab_tank[i][j] == TANK2)
-            || terrain.tab_terrain[i][j] == MINE
-            || terrain.tab_terrain[i][j] == POLLUE)
+        if (collision( joueur, x, y, i, j, terrain, deplacement_possibles, selection_tank) == 0)
         {
             break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2)
-                 || (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
-        {
-            deplacement_possibles[i][j] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][j] = 1;
         }
     }
 }
@@ -473,6 +387,7 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
     int i,j;
     int x=0, y=0;
     int x_tmp=0, y_tmp=0;
+    int selection_tank=0;
 
     SDL_Event event;    // Utilisé pour la gestion des évènements
     SDL_Rect dest_mouvement = {0,0,BLOC,BLOC};  // Utilisé pour déplacer un tank et faire suivre la souris au sprite
@@ -506,7 +421,7 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
             {
                 for (j=0; j<LARGEUR; j++)
                 {
-                    printf(" %d |", deplacement_possibles[i][j]);
+                    printf(" %d |", terrain->tab_tank[i][j]);
                 }
                 printf("\n");
             }
@@ -518,10 +433,12 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
                 x = x_tmp/BLOC;
                 y = y_tmp/BLOC;
 
-                if (*joueur == 1 && terrain->tab_tank[y][x] == TANK1)
+                if ((*joueur == 1 && terrain->tab_tank[y][x] == TANK1)
+                    || (*joueur == 1 && terrain->tab_tank[y][x] == TANK1_CMD))
                 {
                     printf("x_tmp:%d y_tmp:%d\n",x,y);
-                    collision( *joueur, x, y, *terrain, deplacement_possibles );
+                    selection_tank = terrain->tab_tank[y][x];
+                    deplacementsPossibles( *joueur, x, y, *terrain, deplacement_possibles, selection_tank );
 
                     /* ------- Debugging ------- */
 
@@ -535,14 +452,17 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
                     }
 
                     /* ------------------------ */
+
                     terrain->tab_tank[y][x] = VIDE;
                     mouvement = 1;
                 }
 
-                else if (*joueur == 2 && terrain->tab_tank[y][x] == TANK2)
+                else if ((*joueur == 2 && terrain->tab_tank[y][x] == TANK2)
+                          || (*joueur == 2 && terrain->tab_tank[y][x] == TANK2_CMD))
                 {
                     printf("x_tmp:%d y_tmp:%d\n",x_tmp,y_tmp);
-                    collision( *joueur, x, y, *terrain, deplacement_possibles );
+                    selection_tank = terrain->tab_tank[y][x];
+                    deplacementsPossibles( *joueur, x, y, *terrain, deplacement_possibles, selection_tank );
 
                     /* ------- Debugging ------- */
 
@@ -556,6 +476,7 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
                     }
 
                     /* ------------------------ */
+
                     terrain->tab_tank[y][x] = VIDE;
                     mouvement = 1;
                 }
@@ -565,7 +486,13 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
             {
                 if (*joueur == 1 && deplacement_possibles[y_tmp/BLOC][x_tmp/BLOC] != INVALIDE)
                 {
-                    terrain->tab_tank[y_tmp / BLOC][x_tmp / BLOC] = TANK1;
+                    if(selection_tank == TANK1)
+                    {
+                        terrain->tab_tank[y_tmp / BLOC][x_tmp / BLOC] = TANK1;
+                    }
+
+                    else terrain->tab_tank[y_tmp / BLOC][x_tmp / BLOC] = TANK1_CMD;
+
                     mouvement = 0;
                     *joueur = 2;
                     memset(deplacement_possibles, 0, HAUTEUR*LARGEUR*sizeof deplacement_possibles[0][0]);   // Très utile pour réinitialiser notre tableau des déplacements
@@ -573,7 +500,13 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
 
                 else if (*joueur == 2 && deplacement_possibles[y_tmp/BLOC][x_tmp/BLOC] != INVALIDE)
                 {
-                    terrain->tab_tank[y_tmp / BLOC][x_tmp / BLOC] = TANK2;
+                    if(selection_tank == TANK2)
+                    {
+                        terrain->tab_tank[y_tmp / BLOC][x_tmp / BLOC] = TANK2;
+                    }
+
+                    else terrain->tab_tank[y_tmp / BLOC][x_tmp / BLOC] = TANK2_CMD;
+
                     mouvement = 0;
                     *joueur = 1;
                     memset(deplacement_possibles, 0, HAUTEUR*LARGEUR*sizeof deplacement_possibles[0][0]);
@@ -594,12 +527,28 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
 
         if (mouvement && *joueur == 1)
         {
-            SDL_RenderCopy( renderer, textures->tex_tank[TANK1], NULL, &dest_mouvement );
+            if (selection_tank == TANK1)
+            {
+                SDL_RenderCopy( renderer, textures->tex_tank[TANK1], NULL, &dest_mouvement );
+            }
+
+            else
+            {
+                SDL_RenderCopy( renderer, textures->tex_tank[TANK1_CMD], NULL, &dest_mouvement );
+            }
         }
 
         if (mouvement && *joueur == 2)
         {
-            SDL_RenderCopy( renderer, textures->tex_tank[TANK2], NULL, &dest_mouvement );
+            if (selection_tank == TANK2)
+            {
+                SDL_RenderCopy( renderer, textures->tex_tank[TANK2], NULL, &dest_mouvement );
+            }
+
+            else
+            {
+                SDL_RenderCopy( renderer, textures->tex_tank[TANK2_CMD], NULL, &dest_mouvement );
+            }
         }
 
         SDL_RenderPresent( renderer );

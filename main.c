@@ -12,11 +12,11 @@
 
 // On définit notre tableau de jeu
 
-#define BLOC                46                  // Dimensions en pixels d'un bloc
-#define DIMTANK             32                  // Dimensions d'un tank
+#define BLOC                65                  // Dimensions en pixels d'un bloc
+#define DIMTANK             64                  // Dimensions d'un tank
 #define LARGEUR             11                  // Nombre de blocs horizontalement
 #define HAUTEUR             11                  // Nombre de blocs verticalement
-#define DIMENSION           506                 // Dimensions de notre carte
+#define DIMENSION           716                 // Dimensions de notre carte
 #define DIMEXTRA            598                 // Largeur de la fenêtre
 
 // On définit nos éléments de jeu. Leur valeur ne nous importe pas.
@@ -44,7 +44,7 @@ typedef struct struct_terrain{
     };
 
     int tab_tank[LARGEUR][HAUTEUR] = {
-        { 1,1,1,1,1,0,0,0,0,0,0 },
+        { 3,1,1,1,1,0,0,0,0,0,0 },
         { 1,0,1,1,0,0,0,0,0,0,0 },
         { 1,1,1,0,0,0,0,0,0,0,0 },
         { 1,1,0,0,0,0,0,0,0,0,0 },
@@ -54,7 +54,7 @@ typedef struct struct_terrain{
         { 0,0,0,0,0,0,0,0,0,2,2 },
         { 0,0,0,0,0,0,0,0,2,2,2 },
         { 0,0,0,0,0,0,0,2,2,0,2 },
-        { 0,0,0,0,0,0,2,2,2,2,2 },
+        { 0,0,0,0,0,0,2,2,2,2,4 },
     };
 }struct_terrain;
 
@@ -194,11 +194,11 @@ void loadTextures( struct_textures *textures )
      *  Entrée: structure contenant les pointeurs vers les textures
      */
 
-    textures->tex_terrain = IMG_LoadTexture( renderer, "./img/carte.jpg");
-    textures->tex_tank[TANK1] = IMG_LoadTexture( renderer, "./img/tankar.png");
-    textures->tex_tank[TANK2] = IMG_LoadTexture( renderer, "./img/tankbr.png");
-    textures->tex_tank[TANK1_CMD] = IMG_LoadTexture( renderer, "./img/commandar.png");
-    textures->tex_tank[TANK2_CMD] = IMG_LoadTexture( renderer, "./img/commandbr.png");
+    textures->tex_terrain = IMG_LoadTexture( renderer, "./img/carte.png");
+    textures->tex_tank[TANK1] = IMG_LoadTexture( renderer, "./img/tanka.png");
+    textures->tex_tank[TANK2] = IMG_LoadTexture( renderer, "./img/tankb.png");
+    textures->tex_tank[TANK1_CMD] = IMG_LoadTexture( renderer, "./img/commanda.png");
+    textures->tex_tank[TANK2_CMD] = IMG_LoadTexture( renderer, "./img/commandb.png");
 }
 
 void generateTextures( struct_textures *textures, struct_terrain terrain )
@@ -246,21 +246,22 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 {
     memset(deplacement_possibles, 0, HAUTEUR*LARGEUR*sizeof deplacement_possibles[0][0]);   // Très utile pour réinitialiser notre tableau des déplacements
     int i,j;
+    deplacement_possibles[y][x] = 1;    // On peut reposer le tank sur sa position de départ
 
     /* VERS LE BAS */
 
-    for (i=y; i<HAUTEUR; i++)
+    for (i=y+1; i<HAUTEUR; i++)
     {
-        if ((i+1<HAUTEUR && joueur == 1 && terrain.tab_tank[i+1][x] == TANK1) ||  // i+1 sinon on detecte le tank qu'on vient de sélectionner...
-            (i+1<HAUTEUR && joueur == 2 && terrain.tab_tank[i+1][x] == TANK2) ||  // ... en faisant attention à ne pas sortir du tableau
-            terrain.tab_terrain[i][x] == MINE ||
-            terrain.tab_terrain[i][x] == POLLUE)
+        if ((joueur == 1 && terrain.tab_tank[i][x] == TANK1)
+            || (joueur == 2 && terrain.tab_tank[i][x] == TANK2)
+            || terrain.tab_terrain[i][x] == MINE
+            || terrain.tab_terrain[i][x] == POLLUE)
         {
             break;
         }
 
-        else if ((joueur == 1 && terrain.tab_tank[i][x] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][x] == TANK1))
+        else if ((joueur == 1 && terrain.tab_tank[i][x] == TANK2)
+                 || (joueur == 2 && terrain.tab_tank[i][x] == TANK1))
         {
             deplacement_possibles[i][x] = 1;
             break;
@@ -274,18 +275,18 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     /* VERS LE HAUT */
 
-    for (i=y; i>=0; i--)
+    for (i=y-1; i>=0; i--)
     {
-        if ((i-1>=0 && joueur == 1 && terrain.tab_tank[i-1][x] == TANK1) ||
-            (i-1>=0 && joueur == 2 && terrain.tab_tank[i-1][x] == TANK2) ||
-            terrain.tab_terrain[i][x] == MINE ||
-            terrain.tab_terrain[i][x] == POLLUE)
+        if ((joueur == 1 && terrain.tab_tank[i][x] == TANK1)
+            || (joueur == 2 && terrain.tab_tank[i][x] == TANK2)
+            || terrain.tab_terrain[i][x] == MINE
+            || terrain.tab_terrain[i][x] == POLLUE)
         {
             break;
         }
 
-        else if ((joueur == 1 && terrain.tab_tank[i][x] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][x] == TANK1))
+        else if ((joueur == 1 && terrain.tab_tank[i][x] == TANK2)
+                 || (joueur == 2 && terrain.tab_tank[i][x] == TANK1))
         {
             deplacement_possibles[i][x] = 1;
             break;
@@ -299,18 +300,18 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     /* VERS LA GAUCHE */
 
-    for (i=x; i>=0; i--)
+    for (i=x-1; i>=0; i--)
     {
-        if ((i-1>=0 && joueur == 1 && terrain.tab_tank[y][i-1] == TANK1) ||
-            (i-1>=0 && joueur == 2 && terrain.tab_tank[y][i-1] == TANK2) ||
-            terrain.tab_terrain[y][i] == MINE ||
-            terrain.tab_terrain[y][i] == POLLUE)
+        if ((joueur == 1 && terrain.tab_tank[y][i] == TANK1)
+            || (joueur == 2 && terrain.tab_tank[y][i] == TANK2)
+            || terrain.tab_terrain[y][i] == MINE
+            || terrain.tab_terrain[y][i] == POLLUE)
         {
             break;
         }
 
-        else if ((joueur == 1 && terrain.tab_tank[y][i] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[y][i] == TANK1))
+        else if ((joueur == 1 && terrain.tab_tank[y][i] == TANK2)
+                 || (joueur == 2 && terrain.tab_tank[y][i] == TANK1))
         {
             deplacement_possibles[y][i] = 1;
             break;
@@ -324,18 +325,18 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     /* VERS LA DROITE */
 
-    for (i=x; i<LARGEUR; i++)
+    for (i=x+1; i<LARGEUR; i++)
     {
-        if ((i+1<LARGEUR && joueur == 1 && terrain.tab_tank[y][i+1] == TANK1) ||
-            (i+1<LARGEUR && joueur == 2 && terrain.tab_tank[y][i+1] == TANK2) ||
-            terrain.tab_terrain[y][i] == MINE ||
-            terrain.tab_terrain[y][i] == POLLUE)
+        if ((joueur == 1 && terrain.tab_tank[y][i] == TANK1)
+            || (joueur == 2 && terrain.tab_tank[y][i] == TANK2)
+            || terrain.tab_terrain[y][i] == MINE
+            || terrain.tab_terrain[y][i] == POLLUE)
         {
             break;
         }
 
-        else if ((joueur == 1 && terrain.tab_tank[y][i] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[y][i] == TANK1))
+        else if ((joueur == 1 && terrain.tab_tank[y][i] == TANK2)
+                 || (joueur == 2 && terrain.tab_tank[y][i] == TANK1))
         {
             deplacement_possibles[y][i] = 1;
             break;
@@ -349,18 +350,18 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     /* Déplacement en diagonale vers la droite et vers le bas de la position actuelle */
 
-    for (i=y, j=x; i<HAUTEUR && j<LARGEUR; i++,j++)
+    for (i=y+1, j=x+1; i<HAUTEUR && j<LARGEUR; i++,j++)
     {
-        if ((i+1<HAUTEUR && j+1<LARGEUR && joueur == 1 && terrain.tab_tank[i+1][j+1] == TANK1) ||
-            (i+1<HAUTEUR && j+1<LARGEUR && joueur == 2 && terrain.tab_tank[i+1][j+1] == TANK2) ||
-            terrain.tab_terrain[i][j] == MINE ||
-            terrain.tab_terrain[i][j] == POLLUE)
+        if ((joueur == 1 && terrain.tab_tank[i][j] == TANK1)
+            || (joueur == 2 && terrain.tab_tank[i][j] == TANK2)
+            || terrain.tab_terrain[i][j] == MINE
+            || terrain.tab_terrain[i][j] == POLLUE)
         {
             break;
         }
 
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
+        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2)
+                 || (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
         {
             deplacement_possibles[i][j] = 1;
             break;
@@ -374,18 +375,18 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     /* Déplacement en diagonale vers la droite et vers le haut de la position actuelle */
 
-    for (i=y, j=x; i>=0 && j<LARGEUR; i--,j++)
+    for (i=y-1, j=x+1; i>=0 && j<LARGEUR; i--,j++)
     {
-        if ((i-1>=0 && j+1<LARGEUR && joueur == 1 && terrain.tab_tank[i-1][j+1] == TANK1) ||
-            (i-1>=0 && j+1<LARGEUR && joueur == 2 && terrain.tab_tank[i-1][j+1] == TANK2) ||
-            terrain.tab_terrain[i][j] == MINE ||
-            terrain.tab_terrain[i][j] == POLLUE)
+        if ((joueur == 1 && terrain.tab_tank[i][j] == TANK1)
+            || (joueur == 2 && terrain.tab_tank[i][j] == TANK2)
+            || terrain.tab_terrain[i][j] == MINE
+            || terrain.tab_terrain[i][j] == POLLUE)
         {
             break;
         }
 
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
+        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2)
+                 || (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
         {
             deplacement_possibles[i][j] = 1;
             break;
@@ -399,18 +400,18 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     /* Déplacement en diagonale vers la gauche et vers le bas de la position actuelle */
 
-    for (i=y, j=x; i<HAUTEUR && j>=0; i++,j--)
+    for (i=y+1, j=x-1; i<HAUTEUR && j>=0; i++,j--)
     {
-        if ((i+1<HAUTEUR && j-1>=0 && joueur == 1 && terrain.tab_tank[i+1][j-1] == TANK1) ||
-            (i+1<HAUTEUR && j-1>=0 && joueur == 2 && terrain.tab_tank[i+1][j-1] == TANK2) ||
-            terrain.tab_terrain[i][j] == MINE ||
-            terrain.tab_terrain[i][j] == POLLUE)
+        if ((joueur == 1 && terrain.tab_tank[i][j] == TANK1)
+            || (joueur == 2 && terrain.tab_tank[i][j] == TANK2)
+            || terrain.tab_terrain[i][j] == MINE
+            || terrain.tab_terrain[i][j] == POLLUE)
         {
             break;
         }
 
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
+        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2)
+                 || (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
         {
             deplacement_possibles[i][j] = 1;
             break;
@@ -424,18 +425,18 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 
     /* Déplacement en diagonale vers la gauche et vers le haut de la position actuelle */
 
-    for (i=y, j=x; i>=0 && j>=0; i--,j--)
+    for (i=y-1, j=x-1; i>=0 && j>=0; i--,j--)
     {
-        if ((i-1 >=0 && j-1>=0 && joueur == 1 && terrain.tab_tank[i-1][j-1] == TANK1) ||
-            (i-1 >=0 && j-1>=0 && joueur == 2 && terrain.tab_tank[i-1][j-1] == TANK2) ||
-            terrain.tab_terrain[i][j] == MINE ||
-            terrain.tab_terrain[i][j] == POLLUE)
+        if ((joueur == 1 && terrain.tab_tank[i][j] == TANK1)
+            || (joueur == 2 && terrain.tab_tank[i][j] == TANK2)
+            || terrain.tab_terrain[i][j] == MINE
+            || terrain.tab_terrain[i][j] == POLLUE)
         {
             break;
         }
 
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
+        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2)
+                 || (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
         {
             deplacement_possibles[i][j] = 1;
             break;

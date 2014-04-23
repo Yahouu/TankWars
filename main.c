@@ -64,15 +64,16 @@ typedef struct struct_textures{
     SDL_Texture *tex_terrain = NULL;
     SDL_Texture *tex_tank[5] = {NULL};
     SDL_Texture *tex_tank_mvt[5] = {NULL};
+    SDL_Texture *tex_highlight = NULL;
 }struct_textures;
 
 // Prototypes
 
 int initialisation();
 void loadTextures( struct_textures *textures );
-void generateTextures( struct_textures *textures, struct_terrain terrain );
+void generateTextures( struct_textures *textures, struct_terrain terrain, int deplacement_possibles[][HAUTEUR] );
 void collision(int joueur, int x, int y, struct_terrain terrain, int deplacement_possibles[][HAUTEUR]);
-void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrain);
+void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrain, int deplacement_possibles[][HAUTEUR]);
 void pause();
 void close( struct_textures *textures );
 
@@ -102,6 +103,10 @@ int main(int argc, char *argv[])
     srand(time(NULL));
     int joueur = ((rand()%2)+1);   // Joueur 1 ou 2 commence au hasard
 
+    // Nos possibilités de déplacement
+
+    int deplacement_possibles[LARGEUR][HAUTEUR] = {{INVALIDE},{INVALIDE}};
+
     struct_terrain terrain;
     struct_textures textures;
 
@@ -110,11 +115,11 @@ int main(int argc, char *argv[])
     // On génère notre terrain pour la première fois
 
     SDL_RenderClear( renderer );
-    generateTextures( &textures, terrain );
+    generateTextures( &textures, terrain, deplacement_possibles );
     SDL_RenderPresent( renderer );
 
     // Boucle infinie pour bouger un tank
-    deplacerTank( &joueur, &textures, &terrain );
+    deplacerTank( &joueur, &textures, &terrain, deplacement_possibles );
 
     pause();
     close( &textures );
@@ -199,9 +204,10 @@ void loadTextures( struct_textures *textures )
     textures->tex_tank[TANK2] = IMG_LoadTexture( renderer, "./img/tankb.png");
     textures->tex_tank[TANK1_CMD] = IMG_LoadTexture( renderer, "./img/commanda.png");
     textures->tex_tank[TANK2_CMD] = IMG_LoadTexture( renderer, "./img/commandb.png");
+    textures->tex_highlight = IMG_LoadTexture( renderer, "./img/highlight2.png");
 }
 
-void generateTextures( struct_textures *textures, struct_terrain terrain )
+void generateTextures( struct_textures *textures, struct_terrain terrain, int deplacement_possibles[][HAUTEUR] )
 {
     /** Cette procédure génère nos textures dans notre fenêtre de jeu
      *
@@ -238,14 +244,19 @@ void generateTextures( struct_textures *textures, struct_terrain terrain )
                     SDL_RenderCopy( renderer, textures->tex_tank[TANK2_CMD], NULL, &rect_tank );
                     break;
             }
+
+            if(deplacement_possibles[i][j] == 1)
+            {
+                SDL_RenderCopy( renderer, textures->tex_highlight, NULL, &rect_tank);
+            }
         }
     }
 }
 
 void collision( int joueur, int x, int y, struct_terrain terrain, int deplacement_possibles[][HAUTEUR] )
 {
-    memset(deplacement_possibles, 0, HAUTEUR*LARGEUR*sizeof deplacement_possibles[0][0]);   // Très utile pour réinitialiser notre tableau des déplacements
     int i,j;
+
     deplacement_possibles[y][x] = 1;    // On peut reposer le tank sur sa position de départ
 
     /* VERS LE BAS */
@@ -450,7 +461,7 @@ void collision( int joueur, int x, int y, struct_terrain terrain, int deplacemen
 }
 
 
-void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrain)
+void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrain, int deplacement_possibles[][HAUTEUR])
 {
     /** Cette procédure sert à déplacer les tanks tour par tour
      *  Tant qu'on ne sort pas de la boucle infinie volontairement ou en fin de partie
@@ -462,10 +473,6 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
     int i,j;
     int x=0, y=0;
     int x_tmp=0, y_tmp=0;
-
-    /* Nos possibilités de déplacement */
-
-    int deplacement_possibles[LARGEUR][HAUTEUR] = {{INVALIDE},{INVALIDE}};
 
     SDL_Event event;    // Utilisé pour la gestion des évènements
     SDL_Rect dest_mouvement = {0,0,BLOC,BLOC};  // Utilisé pour déplacer un tank et faire suivre la souris au sprite
@@ -561,6 +568,7 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
                     terrain->tab_tank[y_tmp / BLOC][x_tmp / BLOC] = TANK1;
                     mouvement = 0;
                     *joueur = 2;
+                    memset(deplacement_possibles, 0, HAUTEUR*LARGEUR*sizeof deplacement_possibles[0][0]);   // Très utile pour réinitialiser notre tableau des déplacements
                 }
 
                 else if (*joueur == 2 && deplacement_possibles[y_tmp/BLOC][x_tmp/BLOC] != INVALIDE)
@@ -568,6 +576,7 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
                     terrain->tab_tank[y_tmp / BLOC][x_tmp / BLOC] = TANK2;
                     mouvement = 0;
                     *joueur = 1;
+                    memset(deplacement_possibles, 0, HAUTEUR*LARGEUR*sizeof deplacement_possibles[0][0]);
                 }
             }
         }
@@ -581,7 +590,7 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
         }
 
         SDL_RenderClear( renderer );
-        generateTextures( textures, *terrain );
+        generateTextures( textures, *terrain, deplacement_possibles );
 
         if (mouvement && *joueur == 1)
         {
@@ -640,6 +649,8 @@ void close( struct_textures *textures )
         SDL_DestroyTexture( textures->tex_tank[i] );
         textures->tex_tank[i] = NULL;
     }
+    SDL_DestroyTexture( textures->tex_highlight );
+    textures->tex_highlight = NULL;
     SDL_DestroyTexture( textures->tex_terrain );
     textures->tex_terrain = NULL;
     SDL_DestroyRenderer( renderer );

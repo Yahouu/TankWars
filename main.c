@@ -271,15 +271,15 @@ int menu()
 
     int continuer = 0;
 
-    police = TTF_OpenFont("Russian.ttf", 45);
+    police = TTF_OpenFont("FORCED_SQUARE.ttf", 65);
     surf_texte = TTF_RenderText_Blended(police, "TankWar", noir);
     tex_titre = SDL_CreateTextureFromSurface( renderer, surf_texte );
 
-    police = TTF_OpenFont("Russian.ttf", 35);
-    surf_texte = TTF_RenderText_Blended(police, "1\t\tCommencer une nouvelle partie", noir);
+    police = TTF_OpenFont("FORCED_SQUARE.ttf", 35);
+    surf_texte = TTF_RenderText_Blended(police, "Entr\xe9\x65\t- Commencer une nouvelle partie", noir);
     tex_option1 = SDL_CreateTextureFromSurface( renderer, surf_texte );
 
-    surf_texte = TTF_RenderText_Blended(police, "Esc\tQuitter le jeu", noir);
+    surf_texte = TTF_RenderText_Blended(police, "Echap\t\t- Quitter le jeu", noir);
     tex_option2 = SDL_CreateTextureFromSurface( renderer, surf_texte );
     SDL_FreeSurface( surf_texte );
 
@@ -319,6 +319,9 @@ int menu()
                         continuer = -1;
                         break;
                     case SDLK_KP_1: // Demande à jouer
+                        continuer = 1;
+                        break;
+                    case SDLK_RETURN:
                         continuer = 1;
                         break;
                     /*case SDLK_KP2:
@@ -645,26 +648,31 @@ int collision(int joueur, int i, int j, struct_tile tab_S_tile[][LARGEUR], struc
      *  On retourne 0 si on est arrêté par une case interdite afin de sortir de la boucle
      */
 
-    if ((joueur == 1 && tab_S_tile[i][j].tank == TANK1)
-        || ( joueur == 2 && tab_S_tile[i][j].tank == TANK2 )
+    if ((joueur == 1 && (tab_S_tile[i][j].tank == TANK1 || tab_S_tile[i][j].tank == TANK1_CMD))
+        || (joueur == 2 && (tab_S_tile[i][j].tank == TANK2 || tab_S_tile[i][j].tank == TANK2_CMD))
         || ( tab_S_tile[i][j].terrain == MINE ))
     {
         return 0;
     }
 
-    else if (tab_S_tile[i][j].terrain == POLLUE)
+    else if (tab_S_tile[i][j].terrain == POLLUE && (S_tank.type == TANK1 || S_tank.type == TANK2))
     {
-        if (S_tank.type != TANK1_CMD || S_tank.type != TANK2_CMD)
-        {
-            return 0;
-        }
+        return 0;
     }
 
     else if ((joueur == 1 && (tab_S_tile[i][j].tank == TANK2 || tab_S_tile[i][j].tank == TANK2_CMD))
              || (joueur == 2 && (tab_S_tile[i][j].tank == TANK1 || tab_S_tile[i][j].tank == TANK1_CMD)))
     {
-        tab_S_tile[i][j].autorise = 1;
-        return 0;
+        if (tab_S_tile[i][j].terrain == POLLUE)
+        {
+            return 0;
+        }
+
+        else
+        {
+           tab_S_tile[i][j].autorise = 1;
+            return 0;
+        }
     }
 
     else

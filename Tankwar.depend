@@ -1,10 +1,11 @@
 # depslib dependency file v1.0
-1397502535 source:f:\documents\documents\code\tankwar\main.c
+1399150873 source:f:\documents\documents\code\tankwar\main.c
 	<stdlib.h>
 	<stdio.h>
 	<time.h>
 	"SDL.h"
 	"SDL_image.h"
+	"SDL_ttf.h"
 
 1331225294 c:\devpaks\include\sdl2\sdl.h
 	"SDL_main.h"

@@ -56,11 +56,13 @@ int genererCarte(struct_tile tab_S_tile[][LARGEUR]);
 int initialisation(struct_tile tab_S_tile[][LARGEUR]);
 void loadTextures( struct_textures *S_textures );
 int menu();
+void sauvegarder( int joueur, struct_tile tab_S_tile[][LARGEUR] );
+void chargerPartie( int *joueur, struct_tile tab_S_tile[][LARGEUR] );
+void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
 void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
 void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
 int collision(int joueur, int i, int j, struct_tile tab_S_tile[][LARGEUR], struct_tank S_tank);
 void deplacementsPossibles( int joueur, struct_tile tab_S_tile[][LARGEUR], struct_tank S_tank );
-void pause();
 void close( struct_textures *S_textures );
 
 // Fenêtre de jeu et renderer
@@ -91,26 +93,7 @@ SDL_Renderer *renderer = NULL;
     int joueur = ((rand()%2)+1);
 
     loadTextures( &S_textures );
-
-    if (menu() == -1)
-    {
-        close( &S_textures );
-    }
-
-    else
-    {
-        // On génère notre terrain pour la première fois
-
-        SDL_RenderClear( renderer );
-        generateTextures( &S_textures, tab_S_tile );
-        SDL_RenderPresent( renderer );
-
-        // Boucle infinie pour bouger un tank
-        deplacerTank( &joueur, &S_textures, tab_S_tile );
-
-        pause();
-        close( &S_textures );
-    }
+    lancement( &joueur, &S_textures, tab_S_tile );
 
     return 0;
 }
@@ -190,21 +173,27 @@ int initialisation(struct_tile tab_S_tile[][LARGEUR])
 
 int genererCarte(struct_tile tab_S_tile[][LARGEUR])
 {
+    /** Cette fonction génère notre carte au début du jeu et place les tanks.
+     *  On met aussi à zéro toutes les possibilités de déplacement
+     *
+     *  Elle retourne 1 si elle est exécutée jusqu'au bout.
+     */
+
     FILE* carte = NULL;
-    char ligneFichier[LARGEUR * HAUTEUR + 1] = {0};
+    char ligne[LARGEUR * HAUTEUR + 1] = {0};
     int i = 0, j = 0;
 
     carte = fopen("carte.txt", "r");
     if (carte == NULL)
         return 0;
 
-    fgets(ligneFichier, LARGEUR * HAUTEUR + 1, carte);
+    fgets(ligne, LARGEUR * HAUTEUR + 1, carte);
 
     for (i = 0 ; i < LARGEUR ; i++)
     {
         for (j = 0 ; j < HAUTEUR ; j++)
         {
-            switch (ligneFichier[(i * LARGEUR) + j])
+            switch (ligne[(i * LARGEUR) + j])
             {
                 case '0':
                     tab_S_tile[j][i].terrain = NORMAL;
@@ -247,9 +236,8 @@ int genererCarte(struct_tile tab_S_tile[][LARGEUR])
 
 void loadTextures( struct_textures *S_textures )
 {
-    /** Cette procédure charge toutes nos textures en mémoire.
-     *
-     *  Entrée: structure contenant les pointeurs vers les textures
+    /**
+     *  Cette procédure charge toutes nos textures en mémoire.
      */
 
     S_textures->tex_terrain = IMG_LoadTexture( renderer, "./img/carte.png");
@@ -260,9 +248,65 @@ void loadTextures( struct_textures *S_textures )
     S_textures->tex_highlight = IMG_LoadTexture( renderer, "./img/highlight2.png");
 }
 
+void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
+{
+    /** Cette procédure gère le lancement du jeu.
+     *  Selon le choix du jour dans le menu, on effectue diverses actions.
+     *
+     *  Si le joueur quitte, on sauvegarde le plateau de jeu et on quitte le jeu.
+     *  Si le joueur ouvre le jeu et continue sa partie, on la charge.
+     *  Si le joueur commence une nouvelle partie en cours de jeu, on regenère le terrain.
+     *
+     *  Quand le joueur sort de la boucle principale du jeu, on appelle cette procédure de nouveau par récursion
+     */
+
+    static int i = 0;  // Ce compteur nous permet de savoir si on vient de lancer le jeu ou non
+    int choix = menu();
+
+    if (choix == -1)
+    {
+        sauvegarder( *joueur, tab_S_tile );
+        close( S_textures );
+    }
+
+    else
+    {
+        if (choix == 1 && i == 0)
+        {
+            chargerPartie( joueur, tab_S_tile );
+        }
+
+        if (choix == 2 && i != 0)
+        {
+            genererCarte( tab_S_tile );
+        }
+
+        if (i==0)
+        {
+            SDL_RenderClear( renderer );
+            generateTextures( S_textures, tab_S_tile );
+            SDL_RenderPresent( renderer );
+        }
+
+        // Boucle infinie pour bouger un tank
+        deplacerTank( joueur, S_textures, tab_S_tile );
+
+        ++i;
+        lancement(joueur, S_textures, tab_S_tile);
+    }
+}
+
 int menu()
 {
-    SDL_Texture *tex_titre = NULL, *tex_option1 = NULL, *tex_option2 = NULL;
+    /** Cette fonction génère notre menu
+     *
+     *  Le joueur a trois options:
+     *  - Continuer une partie
+     *  - Commencer une nouvelle partie
+     *  - Quitter le jeu
+     */
+
+    SDL_Texture *tex_titre = NULL, *tex_option1 = NULL, *tex_option2 = NULL, *tex_option3 = NULL;
     SDL_Surface *surf_texte = NULL;
     TTF_Font *police = NULL;
     SDL_Rect position = {0,0,0,0};
@@ -276,21 +320,23 @@ int menu()
     tex_titre = SDL_CreateTextureFromSurface( renderer, surf_texte );
 
     police = TTF_OpenFont("FORCED_SQUARE.ttf", 35);
-    surf_texte = TTF_RenderText_Blended(police, "Entr\xe9\x65\t- Commencer une nouvelle partie", noir);
+    // Deep magic follows here
+    surf_texte = TTF_RenderText_Blended(police, "Entr\xe9\x65\t- Continuer une partie", noir);
     tex_option1 = SDL_CreateTextureFromSurface( renderer, surf_texte );
 
-    surf_texte = TTF_RenderText_Blended(police, "Echap\t\t- Quitter le jeu", noir);
+    surf_texte = TTF_RenderText_Blended(police, "N\t\t\t\t\t\t\t\t- Nouvelle partie", noir);
     tex_option2 = SDL_CreateTextureFromSurface( renderer, surf_texte );
+
+    surf_texte = TTF_RenderText_Blended(police, "Echap\t\t- Quitter le jeu", noir);
+    tex_option3 = SDL_CreateTextureFromSurface( renderer, surf_texte );
+
     SDL_FreeSurface( surf_texte );
-
     SDL_RenderClear( renderer );
-
 
     SDL_QueryTexture(tex_titre, NULL, NULL, &position.w, &position.h);
     position.x = DIMENSION/2 - position.w/2;
     position.y = 100;
     SDL_RenderCopy( renderer, tex_titre, NULL, &position );
-
 
     SDL_QueryTexture(tex_option1, NULL, NULL, &position.w, &position.h);
     position.x = 50;
@@ -298,9 +344,12 @@ int menu()
     SDL_RenderCopy( renderer, tex_option1, NULL, &position );
 
     SDL_QueryTexture(tex_option2, NULL, NULL, &position.w, &position.h);
-    position.x = 50;
     position.y = 250;
     SDL_RenderCopy( renderer, tex_option2, NULL, &position );
+
+    SDL_QueryTexture(tex_option3, NULL, NULL, &position.w, &position.h);
+    position.y = 300;
+    SDL_RenderCopy( renderer, tex_option3, NULL, &position );
 
     SDL_RenderPresent( renderer );
 
@@ -318,34 +367,77 @@ int menu()
                     case SDLK_ESCAPE: // Veut arrêter le jeu
                         continuer = -1;
                         break;
-                    case SDLK_KP_1: // Demande à jouer
+                    case SDLK_RETURN: // Demande à jouer
                         continuer = 1;
                         break;
-                    case SDLK_RETURN:
-                        continuer = 1;
+                    case SDLK_n:
+                        continuer = 2;
                         break;
-                    /*case SDLK_KP2:
-                        editeur(ecran);
-                        break;*/
                 }
                 break;
         }
     }
 
     TTF_CloseFont(police);
-    TTF_Quit();
     SDL_DestroyTexture(tex_titre);
     SDL_DestroyTexture(tex_option1);
     SDL_DestroyTexture(tex_option2);
+    SDL_DestroyTexture(tex_option3);
 
     return continuer;
 }
 
+void chargerPartie( int *joueur, struct_tile tab_S_tile[][LARGEUR])
+{
+    /**
+     *  Cette procédure charge la partie sauvegardée si le joueur veut la continuer
+     */
+
+    FILE* sauvegarde = NULL;
+    char ligne[LARGEUR * HAUTEUR + 2] = {0};    // +2 afin de lire le joueur sauvegardé et pour le caractère de fin de chaîne
+    int i = 0, j = 0;
+
+    sauvegarde = fopen("sauvegarde.txt", "r");
+    if (sauvegarde == NULL)
+        printf("Le chargement a échoué, une nouvelle partie recommence");
+
+    fgets(ligne, LARGEUR * HAUTEUR + 2, sauvegarde);
+
+    for (i = 0 ; i < LARGEUR ; i++)
+    {
+        for (j = 0 ; j < HAUTEUR ; j++)
+        {
+            switch (ligne[(i * LARGEUR) + j])
+            {
+                case '0':
+                    tab_S_tile[j][i].tank = VIDE;
+                    break;
+                case '1':
+                    tab_S_tile[j][i].tank = TANK1;
+                    break;
+                case '2':
+                    tab_S_tile[j][i].tank = TANK2;
+                    break;
+                case '3':
+                    tab_S_tile[j][i].tank = TANK1_CMD;
+                    break;
+                case '4':
+                    tab_S_tile[j][i].tank = TANK2_CMD;
+                    break;
+            }
+        }
+    }
+
+    printf("%c\n", ligne[LARGEUR*HAUTEUR]);
+    *joueur = ligne[LARGEUR*HAUTEUR] - '0';    // Converti notre char en int
+
+    fclose(sauvegarde);
+}
+
 void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
 {
-    /** Cette procédure génère nos textures dans notre fenêtre de jeu
-     *
-     *  Entrée: structure contenant nos textures et structure contenant le tableau de jeu
+    /**
+     *  Cette procédure génère nos textures dans notre fenêtre de jeu
      */
 
     SDL_Rect rect_tank = {0,0,BLOC,BLOC};
@@ -391,8 +483,6 @@ void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_ti
 {
     /** Cette procédure sert à déplacer les tanks tour par tour
      *  Tant qu'on ne sort pas de la boucle infinie volontairement ou en fin de partie
-     *
-     *  Entrée: Joueur qui commence à jouer, notre structure de textures et notre structure contenant le terrain de jeu
      */
 
     int continuer = 1, mouvement = 0;
@@ -543,7 +633,7 @@ void deplacementsPossibles( int joueur, struct_tile tab_S_tile[][LARGEUR], struc
     /** Cette procédure étudie au cas par cas les possibilités de déplacements dans les 8 directions possibles
      *  La gestion des collisions au sein de chaque boucle est déléguée à collision()
      *
-     *  Les déplacements possibles sont représentés par un "1" dans le tableau deplacement_possibles
+     *  Chaque case du tableau de jeu est affectée d'une valeur binaire si l'on peut se déplacer dessus ou non
      */
 
     int i,j;
@@ -591,9 +681,6 @@ void deplacementsPossibles( int joueur, struct_tile tab_S_tile[][LARGEUR], struc
 
     /* Déplacement en diagonale vers la droite et vers le bas de la position actuelle */
 
-    /*if((terrain->tab_terrain[S_tank.y+1][S_tank.x] == NORMAL && terrain->tab_terrain[S_tank.y][S_tank.x+1] == NORMAL)
-       || (terrain->tab_terrain[S_tank.y+1][S_tank.x] == POLLUE && terrain->tab_terrain[S_tank.y][S_tank.x+1] == POLLUE))
-    {*/
         for (i=S_tank.y+1, j=S_tank.x+1; i<HAUTEUR && j<LARGEUR; i++,j++)
         {
             if (collision( joueur, i, j, tab_S_tile, S_tank) == 0)
@@ -683,40 +770,36 @@ int collision(int joueur, int i, int j, struct_tile tab_S_tile[][LARGEUR], struc
     return 1;
 }
 
-void pause()
+void sauvegarder( int joueur, struct_tile tab_S_tile[][LARGEUR] )
 {
-    /**  Cette procédure permet de pauser le programme quand il a finit d'executer toutes les instructions.
-     *   Cela laisse le temps à l'utilisateur d'intéragir avec le jeu et de quitter le jeu par lui-même
+    /**
+     *  Cette procédure sauvegarde notre plateau de jeu et le dernier joueur dans un fichier sauvegarde.txt
      */
 
-    int continuer = 1;
-    SDL_Event event;
+    FILE* sauvegarde = NULL;
+    int i = 0, j = 0;
 
-    while (continuer)
+    sauvegarde = fopen("sauvegarde.txt", "w");
+    if (sauvegarde == NULL)
+        printf("Echec de la sauvegarde\n");
+
+    for (i = 0 ; i < LARGEUR ; i++)
     {
-        SDL_WaitEvent(&event);
-        switch(event.type)
+        for (j = 0 ; j < HAUTEUR ; j++)
         {
-            case SDL_QUIT:  // On quitte le jeu quand on appuie sur la croix rouge habituelle
-                continuer = 0;
-                break;
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym)
-                {
-                    case SDLK_ESCAPE: // On quitte quand on appuie sur la touche Echap/Escape
-                        continuer = 0;
-                        break;
-                }
-                break;
+            fprintf(sauvegarde, "%d", tab_S_tile[j][i].tank);
         }
     }
+
+    fprintf(sauvegarde, "%d", joueur);
+
+    fclose(sauvegarde);
 }
 
 void close( struct_textures *textures )
 {
-    /** Cette procédure vide la mémoire, pointe nos pointeurs sur NULL et quitte SDL
-     *
-     *  Entrée: structure contenant nos textures
+    /**
+     *  Cette procédure vide la mémoire, pointe nos pointeurs sur NULL et quitte SDL
      */
 
     int i;
@@ -735,5 +818,6 @@ void close( struct_textures *textures )
     renderer= NULL;
     ecran = NULL;
     IMG_Quit();
+    TTF_Quit();
     SDL_Quit();
 }

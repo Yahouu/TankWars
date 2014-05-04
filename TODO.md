@@ -3,8 +3,8 @@
 ##En priorité
 
   - ~~Finir et réparer la fonction qui gère les possibilités de déplacement~~
-  - Etablir et implémenter les conditions de fin de partie
-  - Coder le décompte des points
+  - ~~Etablir et implémenter les conditions de fin de partie~~
+  - ~~Coder le décompte des points~~
   - ~~Créer un menu~~
   
 ##Perspectives

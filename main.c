@@ -38,9 +38,9 @@ typedef struct struct_tile{
 
 typedef struct struct_textures{
     SDL_Texture *tex_terrain = NULL;
+    SDL_Texture *tex_highlight = NULL;
     SDL_Texture *tex_tank[5] = {NULL};
     SDL_Texture *tex_tank_mvt[5] = {NULL};
-    SDL_Texture *tex_highlight = NULL;
 }struct_textures;
 
 // Cette structure contient les informations sur le tank à déplacer
@@ -60,6 +60,8 @@ void sauvegarder( int joueur, struct_tile tab_S_tile[][LARGEUR] );
 void chargerPartie( int *joueur, struct_tile tab_S_tile[][LARGEUR] );
 void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
 void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
+void endGame( int score1, int score2);
+int checkEndGame( struct_tile tab_S_tile[][LARGEUR] );
 void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
 int collision(int joueur, int i, int j, struct_tile tab_S_tile[][LARGEUR], struct_tank S_tank);
 void deplacementsPossibles( int joueur, struct_tile tab_S_tile[][LARGEUR], struct_tank S_tank );
@@ -563,6 +565,8 @@ void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_ti
                     		tab_S_tile[i][j].autorise = 0;
                     	}
                     }
+
+                    continuer = checkEndGame(tab_S_tile);
                 }
 
                 else if (*joueur == 2 && tab_S_tile[y_tmp/BLOC][x_tmp/BLOC].autorise != INVALIDE)
@@ -583,6 +587,8 @@ void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_ti
                     		tab_S_tile[i][j].autorise = 0;
                     	}
                     }
+
+                    continuer = checkEndGame(tab_S_tile);
                 }
             }
         }
@@ -768,6 +774,195 @@ int collision(int joueur, int i, int j, struct_tile tab_S_tile[][LARGEUR], struc
     }
 
     return 1;
+}
+
+int checkEndGame( struct_tile tab_S_tile[][LARGEUR] )
+{
+    /** Cette procédure vérifie si la partie est terminée ou non, puis compte les points si nécessaire.
+     *  La partie se termine si:
+     *
+     *  - Un des deux joueurs n'a plus de tanks
+     *  - Tous les tanks d'un joueur sont dans la base enemie
+     */
+
+    int i, j, count1 = 0, count2 = 0, frozen1 = 0, frozen2 = 0, fin = 0, score1 = 0, score2 = 0;
+
+    /* On compte le nombre de tanks restant et ceux qui ne peuvent plus bouger */
+
+    for ( i=0 ; i < LARGEUR ; i++)
+    {
+        for ( j=0 ; j < HAUTEUR ; j++)
+        {
+            if (tab_S_tile[j][i].tank == TANK1 || tab_S_tile[j][i].tank == TANK1_CMD)
+            {
+                ++count1;
+                if (tab_S_tile[j][i].tank == TANK1 && tab_S_tile[j][i].terrain == BASE2)
+                {
+                    ++frozen1;
+                }
+            }
+
+            else if (tab_S_tile[j][i].tank == TANK2 || tab_S_tile[j][i].tank == TANK2_CMD)
+            {
+                ++count2;
+                if (tab_S_tile[j][i].tank == TANK2 && tab_S_tile[j][i].terrain == BASE1)
+                {
+                    ++frozen2;
+                }
+            }
+        }
+    }
+
+    if (tab_S_tile[0][0].tank == TANK2_CMD)
+    {
+        ++frozen2;
+    }
+
+    if (tab_S_tile[10][10].tank == TANK1_CMD)
+    {
+        ++frozen1;
+    }
+
+    /* On vérifie si la partie doit se terminer */
+
+    if (count1 == 0 || count2 == 0)
+    {
+        fin = 1;
+    }
+
+    else if (frozen1 == count1 || frozen2 == count2)
+    {
+        fin = 1;
+    }
+
+    /* On compte les points si la partie est terminée */
+
+    if (fin == 1)
+    {
+        /* On commence par le char du commandant qui se trouve sur la case de départ du char commandant adverse */
+
+        if (tab_S_tile[0][0].tank == TANK2_CMD)
+        {
+            score2 += 3;
+            --frozen2;
+            --count2;
+        }
+
+        if (tab_S_tile[10][10].tank == TANK1_CMD)
+        {
+            score1 += 3;
+            --frozen1;
+            --count1;
+        }
+
+        /* On continue avec les chars qui se trouvent dans la base enemie */
+
+        for ( frozen2 ; frozen2 > 0 ; frozen2--, count2--)
+        {
+            score2 += 2;
+        }
+
+        for ( frozen1 ; frozen1 > 0 ; frozen1--, count1--)
+        {
+            score1 += 2;
+        }
+
+        /* On fini par les tanks sur le reste de la carte, s'il en reste */
+
+        for ( count2 ; count2 > 0 ; count2--)
+        {
+            score2 += 1;
+        }
+
+        for ( count1 ; count1 > 0 ; count1--)
+        {
+            score1 += 1;
+        }
+
+        /* On termine la partie */
+
+        endGame( score1, score2);
+        genererCarte( tab_S_tile ); //  On réinitialise le terrain de jeu
+        return 0;
+    }
+
+    return 1;
+}
+
+void endGame( int score1, int score2)
+{
+    /** Cette procédure gère la fin du jeu.
+     *  On affiche les scores ainsi que le gagnant.
+     */
+
+    int continuer = 1;
+    SDL_Event event;
+    SDL_Texture *tex_game_over = NULL, *tex_score1 = NULL, *tex_score2 = NULL;
+    SDL_Surface *surf_texte = NULL;
+    TTF_Font *police = NULL;
+    SDL_Rect position = {0,0,0,0};
+    SDL_Color noir = {0, 0, 0};
+
+    police = TTF_OpenFont("FORCED_SQUARE.ttf", 55);
+    char s_score1[20], s_score2[20];
+    sprintf(s_score1, "Joueur 1: %d points", score1);
+    sprintf(s_score2, "Joueur 2: %d points", score2);
+
+    if (score2 > score1)
+    {
+        surf_texte = TTF_RenderText_Blended(police, "Joueur 2 a gagn\xe9 la partie !", noir);
+    }
+
+    else if (score1 > score2)
+    {
+        surf_texte = TTF_RenderText_Blended(police, "Joueur 1 a gagn\xe9 la partie !", noir);
+    }
+
+    else
+    {
+        surf_texte = TTF_RenderText_Blended(police, "Les deux joueurs ont termin\xe9 ex-aequo !", noir);
+    }
+
+    tex_game_over = SDL_CreateTextureFromSurface( renderer, surf_texte );
+
+    police = TTF_OpenFont("FORCED_SQUARE.ttf", 35);
+    surf_texte = TTF_RenderText_Blended(police, s_score1, noir);
+    tex_score1 = SDL_CreateTextureFromSurface( renderer, surf_texte );
+    surf_texte = TTF_RenderText_Blended(police, s_score2, noir);
+    tex_score2 = SDL_CreateTextureFromSurface( renderer, surf_texte );
+
+    SDL_FreeSurface( surf_texte );
+    SDL_RenderClear( renderer );
+
+    SDL_QueryTexture(tex_game_over, NULL, NULL, &position.w, &position.h);
+    position.x = DIMENSION/2 - position.w/2;
+    position.y = 100;
+    SDL_RenderCopy( renderer, tex_game_over, NULL, &position );
+
+    SDL_QueryTexture(tex_score1, NULL, NULL, &position.w, &position.h);
+    position.x = 50;
+    position.y = 200;
+    SDL_RenderCopy( renderer, tex_score1, NULL, &position );
+
+    SDL_QueryTexture(tex_score2, NULL, NULL, &position.w, &position.h);
+    position.y = 250;
+    SDL_RenderCopy( renderer, tex_score2, NULL, &position );
+
+    SDL_RenderPresent( renderer );
+
+    while (continuer)
+    {
+        SDL_WaitEvent(&event);
+        if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_ESCAPE)
+        {
+            continuer = 0;
+        }
+    }
+
+    TTF_CloseFont(police);
+    SDL_DestroyTexture(tex_game_over);
+    SDL_DestroyTexture(tex_score1);
+    SDL_DestroyTexture(tex_score2);
 }
 
 void sauvegarder( int joueur, struct_tile tab_S_tile[][LARGEUR] )

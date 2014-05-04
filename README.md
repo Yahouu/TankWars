@@ -32,20 +32,20 @@ Les points sont comptés de la manière suivante:
 
 ![alt text](http://i.imgur.com/WvEJlta.jpg?1 "Décompte des points")
 
-Le joueur blanc a 2 points pour le char du commandant dans la base ennemie et 2 x 1 point pour deux chars sur le champ de bataille, le résultat donne 4 points. Le joueur noir obtient 3 points pour le char du commandant sur la case de départ du char commandant blanc et 2 x 2 points pour deux chars dans la base ennemie, le résultat donne 7 points. Noir et le vainqueur.
+Le joueur blanc a 2 points pour le char du commandant dans la base ennemie et 2 x 1 point pour deux chars sur le champ de bataille, le résultat donne 4 points. Le joueur noir obtient 3 points pour le char du commandant sur la case de départ du char commandant blanc et 2 x 2 points pour deux chars dans la base ennemie, le résultat donne 7 points. Noir est le vainqueur.
 
 ##Version
 
-0.8
+0.9
 
 ##Installation
 
- - Installer SDL2 et la librairie SDL_Image pour votre OS et IDE favoris
+ - Installer SDL2 et les librairies SDL_Image et SDL_TTF pour votre OS et IDE favoris
  - Ajouter les flags de compilation nécessaires. Exemple pour Windows et Codeblocks:
  ```
  -IC:\$PATH\include\SDL2 -IC:\$PATH\include -LC:\$PATH\lib -lSDL2_image -lSDL2_ttf -lmingw32 -lSDL2main -lSDL2.dll -luser32 -lgdi32 -lwinmm -ldxguid
 ```
- - Copier les dll pour SDL2 et SDL_Image dans le dossier du projet
+ - Copier les dll pour SDL2, SDL_Image et SDL_TTF dans le dossier du projet
 
 
 ##Technologies 

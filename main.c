@@ -1,5 +1,5 @@
 /** Projet de programmation en C - 1ère année
- *  Tank Wars
+ *  TankWar
  *  Construit avec SDL 2.0
  */
 
@@ -9,14 +9,15 @@
 
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_ttf.h"
 
 // On définit notre tableau de jeu
 
-#define BLOC                46                  // Dimensions en pixels d'un bloc
-#define DIMTANK             32                  // Dimensions d'un tank
+#define BLOC                65                  // Dimensions en pixels d'un bloc
+#define DIMTANK             64                  // Dimensions d'un tank
 #define LARGEUR             11                  // Nombre de blocs horizontalement
 #define HAUTEUR             11                  // Nombre de blocs verticalement
-#define DIMENSION           506                 // Dimensions de notre carte
+#define DIMENSION           716                 // Dimensions de notre carte
 #define DIMEXTRA            598                 // Largeur de la fenêtre
 
 // On définit nos éléments de jeu. Leur valeur ne nous importe pas.
@@ -25,104 +26,81 @@ enum liste_terrain {NORMAL, MINE, POLLUE, BASE1, BASE2};
 enum liste_tank {VIDE, TANK1, TANK2, TANK1_CMD, TANK2_CMD};
 enum liste_deplacement {INVALIDE, VALIDE, ENNEMI};
 
-// Notre terrain de jeu
+// Cette structure contient toutes les informations affectant une case (tile) du terrain
 
-typedef struct struct_terrain{
-
-    int tab_terrain[LARGEUR][HAUTEUR] = {
-        { 3,3,3,3,3,1,0,0,0,0,0 },
-        { 3,1,3,3,0,0,0,0,0,1,0 },
-        { 3,3,3,1,0,1,0,1,0,0,0 },
-        { 3,3,1,0,0,0,0,0,1,0,0 },
-        { 3,0,0,0,2,2,2,0,0,0,0 },
-        { 1,0,1,0,2,2,2,0,1,0,1 },
-        { 0,0,0,0,2,2,2,0,0,0,4 },
-        { 0,0,1,0,0,0,0,0,1,4,4 },
-        { 0,0,0,1,0,1,0,1,4,4,4 },
-        { 0,1,0,0,0,0,0,4,4,1,4 },
-        { 0,0,0,0,0,1,4,4,4,4,4 },
-    };
-
-    int tab_tank[LARGEUR][HAUTEUR] = {
-        { 1,1,1,1,1,0,0,0,0,0,0 },
-        { 1,0,1,1,0,0,0,0,0,0,0 },
-        { 1,1,1,0,0,0,0,0,0,0,0 },
-        { 1,1,0,0,0,0,0,0,0,0,0 },
-        { 1,0,0,0,0,0,0,0,0,0,0 },
-        { 0,0,0,0,0,0,0,0,0,0,0 },
-        { 0,0,0,0,0,0,0,0,0,0,2 },
-        { 0,0,0,0,0,0,0,0,0,2,2 },
-        { 0,0,0,0,0,0,0,0,2,2,2 },
-        { 0,0,0,0,0,0,0,2,2,0,2 },
-        { 0,0,0,0,0,0,2,2,2,2,2 },
-    };
-}struct_terrain;
+typedef struct struct_tile{
+	int terrain;
+	int tank;
+	int autorise;	// le tank peut se déplacer sur cette case
+}struct_tile;
 
 // Nos textures
 
 typedef struct struct_textures{
     SDL_Texture *tex_terrain = NULL;
+    SDL_Texture *tex_highlight = NULL;
     SDL_Texture *tex_tank[5] = {NULL};
     SDL_Texture *tex_tank_mvt[5] = {NULL};
 }struct_textures;
 
+// Cette structure contient les informations sur le tank à déplacer
+
+typedef struct struct_tank{
+	int x,y;
+	int type;
+}struct_tank;
+
 // Prototypes
 
-int initialisation();
-void loadTextures( struct_textures *textures );
-void generateTextures( struct_textures *textures, struct_terrain terrain );
-void collision(int joueur, int x, int y, struct_terrain terrain, int deplacement_possibles[][HAUTEUR]);
-void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrain);
-void pause();
-void close( struct_textures *textures );
+int genererCarte(struct_tile tab_S_tile[][LARGEUR]);
+int initialisation(struct_tile tab_S_tile[][LARGEUR]);
+void loadTextures( struct_textures *S_textures );
+int menu();
+void sauvegarder( int joueur, struct_tile tab_S_tile[][LARGEUR] );
+void chargerPartie( int *joueur, struct_tile tab_S_tile[][LARGEUR] );
+void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
+void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
+void endGame( int score1, int score2);
+int checkEndGame( struct_tile tab_S_tile[][LARGEUR] );
+void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
+int collision(int joueur, int i, int j, struct_tile tab_S_tile[][LARGEUR], struct_tank S_tank);
+void deplacementsPossibles( int joueur, struct_tile tab_S_tile[][LARGEUR], struct_tank S_tank );
+void close( struct_textures *S_textures );
 
 // Fenêtre de jeu et renderer
 
 SDL_Window *ecran = NULL;
 SDL_Renderer *renderer = NULL;
 
-
-
 /************************************************************************************************
  *                                          FONCTIONS                                           *
  ************************************************************************************************/
 
-
-int main(int argc, char *argv[])
+ int main(int argc, char *argv[])
 {
+	struct_tile tab_S_tile[HAUTEUR][LARGEUR];
+	struct_textures S_textures;
 
-    // On vérifie que tout s'est bien initialisé
+	// On vérifie que tout s'est bien initialisé
 
-    if (!initialisation())
+    if (!initialisation(tab_S_tile))
     {
         fprintf(stdout,"Échec de l'initialisation de la SDL (%s)\n",SDL_GetError());
         return -1;
     }
 
+    // On choisit le joueur qui commence au hasard
+
     srand(time(NULL));
-    int joueur = ((rand()%2)+1);   // Joueur 1 ou 2 commence au hasard
+    int joueur = ((rand()%2)+1);
 
-    struct_terrain terrain;
-    struct_textures textures;
-
-    loadTextures( &textures );
-
-    // On génère notre terrain pour la première fois
-
-    SDL_RenderClear( renderer );
-    generateTextures( &textures, terrain );
-    SDL_RenderPresent( renderer );
-
-    // Boucle infinie pour bouger un tank
-    deplacerTank( &joueur, &textures, &terrain );
-
-    pause();
-    close( &textures );
+    loadTextures( &S_textures );
+    lancement( &joueur, &S_textures, tab_S_tile );
 
     return 0;
 }
 
-int initialisation()
+int initialisation(struct_tile tab_S_tile[][LARGEUR])
 {
     /** Cette fonction permet d'initialiser toutes les autres fonctions nécessaire au lancement du jeu.
      *  On initialise SDL, SDL_Image, le renderer et on crée la fenêtre de jeu.
@@ -183,36 +161,292 @@ int initialisation()
         init=0;
     }
 
+    if(TTF_Init() == -1)
+    {
+        fprintf(stderr, "Échec de l'initialisation de SDL_TTF : %s\n", TTF_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    init = genererCarte(tab_S_tile);
+
     return init;
 
 }
 
-void loadTextures( struct_textures *textures )
+int genererCarte(struct_tile tab_S_tile[][LARGEUR])
 {
-    /** Cette procédure charge toutes nos textures en mémoire.
+    /** Cette fonction génère notre carte au début du jeu et place les tanks.
+     *  On met aussi à zéro toutes les possibilités de déplacement
      *
-     *  Entrée: structure contenant les pointeurs vers les textures
+     *  Elle retourne 1 si elle est exécutée jusqu'au bout.
      */
 
-    textures->tex_terrain = IMG_LoadTexture( renderer, "./img/carte.jpg");
-    textures->tex_tank[TANK1] = IMG_LoadTexture( renderer, "./img/tankar.png");
-    textures->tex_tank[TANK2] = IMG_LoadTexture( renderer, "./img/tankbr.png");
-    textures->tex_tank[TANK1_CMD] = IMG_LoadTexture( renderer, "./img/commandar.png");
-    textures->tex_tank[TANK2_CMD] = IMG_LoadTexture( renderer, "./img/commandbr.png");
+    FILE* carte = NULL;
+    char ligne[LARGEUR * HAUTEUR + 1] = {0};
+    int i = 0, j = 0;
+
+    carte = fopen("carte.txt", "r");
+    if (carte == NULL)
+        return 0;
+
+    fgets(ligne, LARGEUR * HAUTEUR + 1, carte);
+
+    for (i = 0 ; i < LARGEUR ; i++)
+    {
+        for (j = 0 ; j < HAUTEUR ; j++)
+        {
+            switch (ligne[(i * LARGEUR) + j])
+            {
+                case '0':
+                    tab_S_tile[j][i].terrain = NORMAL;
+                    tab_S_tile[j][i].tank = VIDE;
+                    break;
+                case '1':
+                    tab_S_tile[j][i].terrain = MINE;
+                    tab_S_tile[j][i].tank = VIDE;
+                    break;
+                case '2':
+                    tab_S_tile[j][i].terrain = POLLUE;
+                    tab_S_tile[j][i].tank = VIDE;
+                    break;
+                case '3':
+                    tab_S_tile[j][i].terrain = BASE1;
+                    tab_S_tile[j][i].tank = TANK1;
+                    break;
+                case '4':
+                    tab_S_tile[j][i].terrain = BASE2;
+                    tab_S_tile[j][i].tank = TANK2;
+                    break;
+            }
+        }
+    }
+
+    fclose(carte);
+    tab_S_tile[0][0].tank = TANK1_CMD;
+    tab_S_tile[10][10].tank = TANK2_CMD;
+
+    for (i = 0; i<HAUTEUR ; i++)
+    {
+        for (j=0 ; j<LARGEUR ; j++)
+        {
+            tab_S_tile[i][j].autorise = 0;
+        }
+    }
+
+    return 1;
 }
 
-void generateTextures( struct_textures *textures, struct_terrain terrain )
+void loadTextures( struct_textures *S_textures )
 {
-    /** Cette procédure génère nos textures dans notre fenêtre de jeu
+    /**
+     *  Cette procédure charge toutes nos textures en mémoire.
+     */
+
+    S_textures->tex_terrain = IMG_LoadTexture( renderer, "./img/carte.png");
+    S_textures->tex_tank[TANK1] = IMG_LoadTexture( renderer, "./img/tanka.png");
+    S_textures->tex_tank[TANK2] = IMG_LoadTexture( renderer, "./img/tankb.png");
+    S_textures->tex_tank[TANK1_CMD] = IMG_LoadTexture( renderer, "./img/commanda.png");
+    S_textures->tex_tank[TANK2_CMD] = IMG_LoadTexture( renderer, "./img/commandb.png");
+    S_textures->tex_highlight = IMG_LoadTexture( renderer, "./img/highlight2.png");
+}
+
+void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
+{
+    /** Cette procédure gère le lancement du jeu.
+     *  Selon le choix du jour dans le menu, on effectue diverses actions.
      *
-     *  Entrée: structure contenant nos textures et structure contenant le tableau de jeu
+     *  Si le joueur quitte, on sauvegarde le plateau de jeu et on quitte le jeu.
+     *  Si le joueur ouvre le jeu et continue sa partie, on la charge.
+     *  Si le joueur commence une nouvelle partie en cours de jeu, on regenère le terrain.
+     *
+     *  Quand le joueur sort de la boucle principale du jeu, on appelle cette procédure de nouveau par récursion
+     */
+
+    static int i = 0;  // Ce compteur nous permet de savoir si on vient de lancer le jeu ou non
+    int choix = menu();
+
+    if (choix == -1)
+    {
+        sauvegarder( *joueur, tab_S_tile );
+        close( S_textures );
+    }
+
+    else
+    {
+        if (choix == 1 && i == 0)
+        {
+            chargerPartie( joueur, tab_S_tile );
+        }
+
+        if (choix == 2 && i != 0)
+        {
+            genererCarte( tab_S_tile );
+        }
+
+        if (i==0)
+        {
+            SDL_RenderClear( renderer );
+            generateTextures( S_textures, tab_S_tile );
+            SDL_RenderPresent( renderer );
+        }
+
+        // Boucle infinie pour bouger un tank
+        deplacerTank( joueur, S_textures, tab_S_tile );
+
+        ++i;
+        lancement(joueur, S_textures, tab_S_tile);
+    }
+}
+
+int menu()
+{
+    /** Cette fonction génère notre menu
+     *
+     *  Le joueur a trois options:
+     *  - Continuer une partie
+     *  - Commencer une nouvelle partie
+     *  - Quitter le jeu
+     */
+
+    SDL_Texture *tex_titre = NULL, *tex_option1 = NULL, *tex_option2 = NULL, *tex_option3 = NULL;
+    SDL_Surface *surf_texte = NULL;
+    TTF_Font *police = NULL;
+    SDL_Rect position = {0,0,0,0};
+    SDL_Event event;
+    SDL_Color noir = {0, 0, 0};
+
+    int continuer = 0;
+
+    police = TTF_OpenFont("FORCED_SQUARE.ttf", 65);
+    surf_texte = TTF_RenderText_Blended(police, "TankWar", noir);
+    tex_titre = SDL_CreateTextureFromSurface( renderer, surf_texte );
+
+    police = TTF_OpenFont("FORCED_SQUARE.ttf", 35);
+    // Deep magic follows here
+    surf_texte = TTF_RenderText_Blended(police, "Entr\xe9\x65\t- Continuer une partie", noir);
+    tex_option1 = SDL_CreateTextureFromSurface( renderer, surf_texte );
+
+    surf_texte = TTF_RenderText_Blended(police, "N\t\t\t\t\t\t\t\t- Nouvelle partie", noir);
+    tex_option2 = SDL_CreateTextureFromSurface( renderer, surf_texte );
+
+    surf_texte = TTF_RenderText_Blended(police, "Echap\t\t- Quitter le jeu", noir);
+    tex_option3 = SDL_CreateTextureFromSurface( renderer, surf_texte );
+
+    SDL_FreeSurface( surf_texte );
+    SDL_RenderClear( renderer );
+
+    SDL_QueryTexture(tex_titre, NULL, NULL, &position.w, &position.h);
+    position.x = DIMENSION/2 - position.w/2;
+    position.y = 100;
+    SDL_RenderCopy( renderer, tex_titre, NULL, &position );
+
+    SDL_QueryTexture(tex_option1, NULL, NULL, &position.w, &position.h);
+    position.x = 50;
+    position.y = 200;
+    SDL_RenderCopy( renderer, tex_option1, NULL, &position );
+
+    SDL_QueryTexture(tex_option2, NULL, NULL, &position.w, &position.h);
+    position.y = 250;
+    SDL_RenderCopy( renderer, tex_option2, NULL, &position );
+
+    SDL_QueryTexture(tex_option3, NULL, NULL, &position.w, &position.h);
+    position.y = 300;
+    SDL_RenderCopy( renderer, tex_option3, NULL, &position );
+
+    SDL_RenderPresent( renderer );
+
+    while (continuer == 0)
+    {
+        SDL_WaitEvent(&event);
+        switch(event.type)
+        {
+            case SDL_QUIT:
+                continuer = -1;
+                break;
+            case SDL_KEYDOWN:
+                switch(event.key.keysym.sym)
+                {
+                    case SDLK_ESCAPE: // Veut arrêter le jeu
+                        continuer = -1;
+                        break;
+                    case SDLK_RETURN: // Demande à jouer
+                        continuer = 1;
+                        break;
+                    case SDLK_n:
+                        continuer = 2;
+                        break;
+                }
+                break;
+        }
+    }
+
+    TTF_CloseFont(police);
+    SDL_DestroyTexture(tex_titre);
+    SDL_DestroyTexture(tex_option1);
+    SDL_DestroyTexture(tex_option2);
+    SDL_DestroyTexture(tex_option3);
+
+    return continuer;
+}
+
+void chargerPartie( int *joueur, struct_tile tab_S_tile[][LARGEUR])
+{
+    /**
+     *  Cette procédure charge la partie sauvegardée si le joueur veut la continuer
+     */
+
+    FILE* sauvegarde = NULL;
+    char ligne[LARGEUR * HAUTEUR + 2] = {0};    // +2 afin de lire le joueur sauvegardé et pour le caractère de fin de chaîne
+    int i = 0, j = 0;
+
+    sauvegarde = fopen("sauvegarde.txt", "r");
+    if (sauvegarde == NULL)
+        printf("Le chargement a échoué, une nouvelle partie recommence");
+
+    fgets(ligne, LARGEUR * HAUTEUR + 2, sauvegarde);
+
+    for (i = 0 ; i < LARGEUR ; i++)
+    {
+        for (j = 0 ; j < HAUTEUR ; j++)
+        {
+            switch (ligne[(i * LARGEUR) + j])
+            {
+                case '0':
+                    tab_S_tile[j][i].tank = VIDE;
+                    break;
+                case '1':
+                    tab_S_tile[j][i].tank = TANK1;
+                    break;
+                case '2':
+                    tab_S_tile[j][i].tank = TANK2;
+                    break;
+                case '3':
+                    tab_S_tile[j][i].tank = TANK1_CMD;
+                    break;
+                case '4':
+                    tab_S_tile[j][i].tank = TANK2_CMD;
+                    break;
+            }
+        }
+    }
+
+    printf("%c\n", ligne[LARGEUR*HAUTEUR]);
+    *joueur = ligne[LARGEUR*HAUTEUR] - '0';    // Converti notre char en int
+
+    fclose(sauvegarde);
+}
+
+void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
+{
+    /**
+     *  Cette procédure génère nos textures dans notre fenêtre de jeu
      */
 
     SDL_Rect rect_tank = {0,0,BLOC,BLOC};
     SDL_Rect rect_carte = {0,0,DIMENSION,DIMENSION};
     int i,j;
 
-    SDL_RenderCopy( renderer, textures->tex_terrain, NULL, &rect_carte );
+    SDL_RenderCopy( renderer, S_textures->tex_terrain, NULL, &rect_carte );
 
     for (i = 0 ; i < LARGEUR ; i++)
     {
@@ -220,259 +454,52 @@ void generateTextures( struct_textures *textures, struct_terrain terrain )
         {
             rect_tank.y = i * BLOC;
             rect_tank.x = j * BLOC;
-            switch(terrain.tab_tank[i][j])
+            switch(tab_S_tile[i][j].tank)
             {
                 case 1:
-                    SDL_RenderCopy( renderer, textures->tex_tank[TANK1], NULL, &rect_tank );
+                    SDL_RenderCopy( renderer, S_textures->tex_tank[TANK1], NULL, &rect_tank );
                     break;
 
                 case 2:
-                    SDL_RenderCopy( renderer, textures->tex_tank[TANK2], NULL, &rect_tank );
+                    SDL_RenderCopy( renderer, S_textures->tex_tank[TANK2], NULL, &rect_tank );
                     break;
 
                 case 3:
-                    SDL_RenderCopy( renderer, textures->tex_tank[TANK1_CMD], NULL, &rect_tank );
+                    SDL_RenderCopy( renderer, S_textures->tex_tank[TANK1_CMD], NULL, &rect_tank );
                     break;
 
                 case 4:
-                    SDL_RenderCopy( renderer, textures->tex_tank[TANK2_CMD], NULL, &rect_tank );
+                    SDL_RenderCopy( renderer, S_textures->tex_tank[TANK2_CMD], NULL, &rect_tank );
                     break;
+            }
+
+            if(tab_S_tile[i][j].autorise == 1)
+            {
+                SDL_RenderCopy( renderer, S_textures->tex_highlight, NULL, &rect_tank);
             }
         }
     }
 }
 
-void collision( int joueur, int x, int y, struct_terrain terrain, int deplacement_possibles[][HAUTEUR] )
-{
-    memset(deplacement_possibles, 0, HAUTEUR*LARGEUR*sizeof deplacement_possibles[0][0]);   // Très utile pour réinitialiser notre tableau des déplacements
-    int i,j;
-
-    /* VERS LE BAS */
-
-    for (i=y; i<HAUTEUR; i++)
-    {
-        if ((i+1<HAUTEUR && joueur == 1 && terrain.tab_tank[i+1][x] == TANK1) ||  // i+1 sinon on detecte le tank qu'on vient de sélectionner...
-            (i+1<HAUTEUR && joueur == 2 && terrain.tab_tank[i+1][x] == TANK2) ||  // ... en faisant attention à ne pas sortir du tableau
-            terrain.tab_terrain[i][x] == MINE ||
-            terrain.tab_terrain[i][x] == POLLUE)
-        {
-            break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][x] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][x] == TANK1))
-        {
-            deplacement_possibles[i][x] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][x] = 1;
-        }
-    }
-
-    /* VERS LE HAUT */
-
-    for (i=y; i>=0; i--)
-    {
-        if ((i-1>=0 && joueur == 1 && terrain.tab_tank[i-1][x] == TANK1) ||
-            (i-1>=0 && joueur == 2 && terrain.tab_tank[i-1][x] == TANK2) ||
-            terrain.tab_terrain[i][x] == MINE ||
-            terrain.tab_terrain[i][x] == POLLUE)
-        {
-            break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][x] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][x] == TANK1))
-        {
-            deplacement_possibles[i][x] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][x] = 1;
-        }
-    }
-
-    /* VERS LA GAUCHE */
-
-    for (i=x; i>=0; i--)
-    {
-        if ((i-1>=0 && joueur == 1 && terrain.tab_tank[y][i-1] == TANK1) ||
-            (i-1>=0 && joueur == 2 && terrain.tab_tank[y][i-1] == TANK2) ||
-            terrain.tab_terrain[y][i] == MINE ||
-            terrain.tab_terrain[y][i] == POLLUE)
-        {
-            break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[y][i] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[y][i] == TANK1))
-        {
-            deplacement_possibles[y][i] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[y][i] = 1;
-        }
-    }
-
-    /* VERS LA DROITE */
-
-    for (i=x; i<LARGEUR; i++)
-    {
-        if ((i+1<LARGEUR && joueur == 1 && terrain.tab_tank[y][i+1] == TANK1) ||
-            (i+1<LARGEUR && joueur == 2 && terrain.tab_tank[y][i+1] == TANK2) ||
-            terrain.tab_terrain[y][i] == MINE ||
-            terrain.tab_terrain[y][i] == POLLUE)
-        {
-            break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[y][i] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[y][i] == TANK1))
-        {
-            deplacement_possibles[y][i] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[y][i] = 1;
-        }
-    }
-
-    /* Déplacement en diagonale vers la droite et vers le bas de la position actuelle */
-
-    for (i=y, j=x; i<HAUTEUR && j<LARGEUR; i++,j++)
-    {
-        if ((i+1<HAUTEUR && j+1<LARGEUR && joueur == 1 && terrain.tab_tank[i+1][j+1] == TANK1) ||
-            (i+1<HAUTEUR && j+1<LARGEUR && joueur == 2 && terrain.tab_tank[i+1][j+1] == TANK2) ||
-            terrain.tab_terrain[i][j] == MINE ||
-            terrain.tab_terrain[i][j] == POLLUE)
-        {
-            break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
-        {
-            deplacement_possibles[i][j] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][j] = 1;
-        }
-    }
-
-    /* Déplacement en diagonale vers la droite et vers le haut de la position actuelle */
-
-    for (i=y, j=x; i>=0 && j<LARGEUR; i--,j++)
-    {
-        if ((i-1>=0 && j+1<LARGEUR && joueur == 1 && terrain.tab_tank[i-1][j+1] == TANK1) ||
-            (i-1>=0 && j+1<LARGEUR && joueur == 2 && terrain.tab_tank[i-1][j+1] == TANK2) ||
-            terrain.tab_terrain[i][j] == MINE ||
-            terrain.tab_terrain[i][j] == POLLUE)
-        {
-            break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
-        {
-            deplacement_possibles[i][j] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][j] = 1;
-        }
-    }
-
-    /* Déplacement en diagonale vers la gauche et vers le bas de la position actuelle */
-
-    for (i=y, j=x; i<HAUTEUR && j>=0; i++,j--)
-    {
-        if ((i+1<HAUTEUR && j-1>=0 && joueur == 1 && terrain.tab_tank[i+1][j-1] == TANK1) ||
-            (i+1<HAUTEUR && j-1>=0 && joueur == 2 && terrain.tab_tank[i+1][j-1] == TANK2) ||
-            terrain.tab_terrain[i][j] == MINE ||
-            terrain.tab_terrain[i][j] == POLLUE)
-        {
-            break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
-        {
-            deplacement_possibles[i][j] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][j] = 1;
-        }
-    }
-
-    /* Déplacement en diagonale vers la gauche et vers le haut de la position actuelle */
-
-    for (i=y, j=x; i>=0 && j>=0; i--,j--)
-    {
-        if ((i-1 >=0 && j-1>=0 && joueur == 1 && terrain.tab_tank[i-1][j-1] == TANK1) ||
-            (i-1 >=0 && j-1>=0 && joueur == 2 && terrain.tab_tank[i-1][j-1] == TANK2) ||
-            terrain.tab_terrain[i][j] == MINE ||
-            terrain.tab_terrain[i][j] == POLLUE)
-        {
-            break;
-        }
-
-        else if ((joueur == 1 && terrain.tab_tank[i][j] == TANK2) ||
-                 (joueur == 2 && terrain.tab_tank[i][j] == TANK1))
-        {
-            deplacement_possibles[i][j] = 1;
-            break;
-        }
-
-        else
-        {
-            deplacement_possibles[i][j] = 1;
-        }
-    }
-}
-
-
-void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrain)
+void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
 {
     /** Cette procédure sert à déplacer les tanks tour par tour
      *  Tant qu'on ne sort pas de la boucle infinie volontairement ou en fin de partie
-     *
-     *  Entrée: Joueur qui commence à jouer, notre structure de textures et notre structure contenant le terrain de jeu
      */
 
     int continuer = 1, mouvement = 0;
     int i,j;
-    int x=0, y=0;
     int x_tmp=0, y_tmp=0;
-
-    /* Nos possibilités de déplacement */
-
-    int deplacement_possibles[LARGEUR][HAUTEUR] = {{INVALIDE},{INVALIDE}};
+    struct_tank S_tank;
+    S_tank.x=0;
+    S_tank.y=0;
+    S_tank.type=0;
 
     SDL_Event event;    // Utilisé pour la gestion des évènements
     SDL_Rect dest_mouvement = {0,0,BLOC,BLOC};  // Utilisé pour déplacer un tank et faire suivre la souris au sprite
 
     while (continuer)
     {
-        x_tmp=0;
-        y_tmp=0;
         SDL_WaitEvent(&event);
 
         // Si on quitte la fenêtre ou on appuie sur Echap, on sort de la boucle
@@ -485,88 +512,83 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
         if (event.type == SDL_MOUSEBUTTONDOWN)
         {
             SDL_GetMouseState( &x_tmp, &y_tmp );    // On récupère les coordonnées du clic
-
-            /* ---------debugging----------*/
-
-            printf("joueur:%d\n", *joueur);
-            printf("x:%dpx y:%dpx\n",x_tmp,y_tmp);
-            printf("x:%d y:%d\n",x_tmp/BLOC,y_tmp/BLOC);
-            printf("x saved:%d y saved:%d\n",x,y);
-            printf("terrain: %d\n", terrain->tab_terrain[x_tmp / BLOC][y_tmp / BLOC]);
-            printf("tank: %d\n\n", terrain->tab_tank[x_tmp / BLOC][y_tmp / BLOC]);
-            for (i=0; i<HAUTEUR; i++)
-            {
-                for (j=0; j<LARGEUR; j++)
-                {
-                    printf(" %d |", deplacement_possibles[i][j]);
-                }
-                printf("\n");
-            }
-
-            /* -------------------------- */
+            printf("%d\n", *joueur);
 
             if (!mouvement)
             {
-                x = x_tmp/BLOC;
-                y = y_tmp/BLOC;
+                S_tank.x = x_tmp/BLOC;
+                S_tank.y = y_tmp/BLOC;
+                S_tank.type = tab_S_tile[S_tank.y][S_tank.x].tank;
 
-                if (*joueur == 1 && terrain->tab_tank[y][x] == TANK1)
+                if (*joueur == 1 && S_tank.type == TANK1 && tab_S_tile[S_tank.y][S_tank.x].terrain != BASE2)
                 {
-                    printf("x_tmp:%d y_tmp:%d\n",x,y);
-                    collision( *joueur, x, y, *terrain, deplacement_possibles );
-
-                    /* ------- Debugging ------- */
-
-                    for (i=0; i<HAUTEUR; i++)
-                    {
-                        for (j=0; j<LARGEUR; j++)
-                        {
-                            printf(" %d |", deplacement_possibles[i][j]);
-                        }
-                        printf("\n");
-                    }
-
-                    /* ------------------------ */
-                    terrain->tab_tank[y][x] = VIDE;
+                    deplacementsPossibles( *joueur, tab_S_tile, S_tank);
                     mouvement = 1;
                 }
 
-                else if (*joueur == 2 && terrain->tab_tank[y][x] == TANK2)
+                else if (*joueur == 1 && S_tank.type == TANK1_CMD && !(S_tank.x == 10 && S_tank.y == 10))
                 {
-                    printf("x_tmp:%d y_tmp:%d\n",x_tmp,y_tmp);
-                    collision( *joueur, x, y, *terrain, deplacement_possibles );
+                    deplacementsPossibles( *joueur, tab_S_tile, S_tank);
+                    mouvement = 1;
+                }
 
-                    /* ------- Debugging ------- */
+                else if (*joueur == 2 && S_tank.type == TANK2 && tab_S_tile[S_tank.y][S_tank.x].terrain != BASE1)
+                {
+                    deplacementsPossibles( *joueur, tab_S_tile, S_tank);
+                    mouvement = 1;
+                }
 
-                    for (i=0; i<HAUTEUR; i++)
-                    {
-                        for (j=0; j<LARGEUR; j++)
-                        {
-                            printf(" %d |", deplacement_possibles[i][j]);
-                        }
-                        printf("\n");
-                    }
-
-                    /* ------------------------ */
-                    terrain->tab_tank[y][x] = VIDE;
+                else if (*joueur == 2 && S_tank.type == TANK2_CMD && !(S_tank.x==0 && S_tank.y==0))
+                {
+                    deplacementsPossibles( *joueur, tab_S_tile, S_tank);
                     mouvement = 1;
                 }
             }
 
             else if (mouvement)
             {
-                if (*joueur == 1 && deplacement_possibles[y_tmp/BLOC][x_tmp/BLOC] != INVALIDE)
+                if (*joueur == 1 && tab_S_tile[y_tmp/BLOC][x_tmp/BLOC].autorise != INVALIDE)
                 {
-                    terrain->tab_tank[y_tmp / BLOC][x_tmp / BLOC] = TANK1;
+                    if(S_tank.type == TANK1)
+                    {
+                        tab_S_tile[y_tmp / BLOC][x_tmp / BLOC].tank = TANK1;
+                    }
+
+                    else tab_S_tile[y_tmp / BLOC][x_tmp / BLOC].tank = TANK1_CMD;
+
                     mouvement = 0;
                     *joueur = 2;
+                    for (i = 0; i<HAUTEUR ; i++)
+                    {
+                    	for (j=0 ; j<LARGEUR ; j++)
+                    	{
+                    		tab_S_tile[i][j].autorise = 0;
+                    	}
+                    }
+
+                    continuer = checkEndGame(tab_S_tile);
                 }
 
-                else if (*joueur == 2 && deplacement_possibles[y_tmp/BLOC][x_tmp/BLOC] != INVALIDE)
+                else if (*joueur == 2 && tab_S_tile[y_tmp/BLOC][x_tmp/BLOC].autorise != INVALIDE)
                 {
-                    terrain->tab_tank[y_tmp / BLOC][x_tmp / BLOC] = TANK2;
+                    if(S_tank.type == TANK2)
+                    {
+                        tab_S_tile[y_tmp / BLOC][x_tmp / BLOC].tank = TANK2;
+                    }
+
+                    else tab_S_tile[y_tmp / BLOC][x_tmp / BLOC].tank = TANK2_CMD;
+
                     mouvement = 0;
                     *joueur = 1;
+                    for (i = 0; i<HAUTEUR ; i++)
+                    {
+                    	for (j=0 ; j<LARGEUR ; j++)
+                    	{
+                    		tab_S_tile[i][j].autorise = 0;
+                    	}
+                    }
+
+                    continuer = checkEndGame(tab_S_tile);
                 }
             }
         }
@@ -580,56 +602,399 @@ void deplacerTank(int *joueur, struct_textures *textures, struct_terrain *terrai
         }
 
         SDL_RenderClear( renderer );
-        generateTextures( textures, *terrain );
+        generateTextures( S_textures, tab_S_tile );
 
         if (mouvement && *joueur == 1)
         {
-            SDL_RenderCopy( renderer, textures->tex_tank[TANK1], NULL, &dest_mouvement );
+            if (S_tank.type == TANK1)
+            {
+                SDL_RenderCopy( renderer, S_textures->tex_tank[TANK1], NULL, &dest_mouvement );
+            }
+
+            else
+            {
+                SDL_RenderCopy( renderer, S_textures->tex_tank[TANK1_CMD], NULL, &dest_mouvement );
+            }
         }
 
         if (mouvement && *joueur == 2)
         {
-            SDL_RenderCopy( renderer, textures->tex_tank[TANK2], NULL, &dest_mouvement );
+            if (S_tank.type == TANK2)
+            {
+                SDL_RenderCopy( renderer, S_textures->tex_tank[TANK2], NULL, &dest_mouvement );
+            }
+
+            else
+            {
+                SDL_RenderCopy( renderer, S_textures->tex_tank[TANK2_CMD], NULL, &dest_mouvement );
+            }
         }
 
         SDL_RenderPresent( renderer );
     }
 }
 
-void pause()
+void deplacementsPossibles( int joueur, struct_tile tab_S_tile[][LARGEUR], struct_tank S_tank )
 {
-    /**  Cette procédure permet de pauser le programme quand il a finit d'executer toutes les instructions.
-     *   Cela laisse le temps à l'utilisateur d'intéragir avec le jeu et de quitter le jeu par lui-même
+    /** Cette procédure étudie au cas par cas les possibilités de déplacements dans les 8 directions possibles
+     *  La gestion des collisions au sein de chaque boucle est déléguée à collision()
+     *
+     *  Chaque case du tableau de jeu est affectée d'une valeur binaire si l'on peut se déplacer dessus ou non
+     */
+
+    int i,j;
+    tab_S_tile[S_tank.y][S_tank.x].autorise = 1;    // On peut reposer le tank sur sa position de départ
+
+    /* VERS LE BAS */
+
+    for (i=S_tank.y+1; i<HAUTEUR; i++)
+    {
+        if (collision( joueur, i, S_tank.x, tab_S_tile, S_tank) == 0)
+        {
+            break;
+        }
+    }
+
+    /* VERS LE HAUT */
+
+    for (i=S_tank.y-1; i>=0; i--)
+    {
+        if (collision( joueur, i, S_tank.x, tab_S_tile, S_tank) == 0)
+        {
+            break;
+        }
+    }
+
+    /* VERS LA GAUCHE */
+
+    for (i=S_tank.x-1; i>=0; i--)
+    {
+        if (collision( joueur, S_tank.y, i, tab_S_tile, S_tank) == 0)
+        {
+            break;
+        }
+    }
+
+    /* VERS LA DROITE */
+
+    for (i=S_tank.x+1; i<LARGEUR; i++)
+    {
+        if (collision( joueur, S_tank.y, i, tab_S_tile, S_tank) == 0)
+        {
+            break;
+        }
+    }
+
+    /* Déplacement en diagonale vers la droite et vers le bas de la position actuelle */
+
+        for (i=S_tank.y+1, j=S_tank.x+1; i<HAUTEUR && j<LARGEUR; i++,j++)
+        {
+            if (collision( joueur, i, j, tab_S_tile, S_tank) == 0)
+            {
+                break;
+            }
+        }
+
+
+    /* Déplacement en diagonale vers la droite et vers le haut de la position actuelle */
+
+        for (i=S_tank.y-1, j=S_tank.x+1; i>=0 && j<LARGEUR; i--,j++)
+        {
+            if (collision( joueur,i, j, tab_S_tile, S_tank) == 0)
+            {
+                break;
+            }
+        }
+
+    /* Déplacement en diagonale vers la gauche et vers le bas de la position actuelle */
+
+        for (i=S_tank.y+1, j=S_tank.x-1; i<HAUTEUR && j>=0; i++,j--)
+        {
+            if (collision( joueur, i, j, tab_S_tile, S_tank) == 0)
+            {
+                break;
+            }
+        }
+
+    /* Déplacement en diagonale vers la gauche et vers le haut de la position actuelle */
+
+        for (i=S_tank.y-1, j=S_tank.x-1; i>=0 && j>=0; i--,j--)
+        {
+            if (collision( joueur, i, j, tab_S_tile, S_tank) == 0)
+            {
+                break;
+            }
+        }
+
+        tab_S_tile[S_tank.y][S_tank.x].tank = VIDE;
+
+}
+
+int collision(int joueur, int i, int j, struct_tile tab_S_tile[][LARGEUR], struct_tank S_tank)
+{
+    /** Cette fonction gère les collisions dans une direction, fournie par deplacementsPossibles()
+     *
+     *  On vérifie le joueur, la position initiale du tank (y,x) et le type de tank sélectionné
+     *  i et j sont les compteurs de chaque boucle dans deplacementsPossibles().
+     *  L'un des compteurs peut être remplacé par x ou y selon la direction étudiée
+     *
+     *  On retourne 0 si on est arrêté par une case interdite afin de sortir de la boucle
+     */
+
+    if ((joueur == 1 && (tab_S_tile[i][j].tank == TANK1 || tab_S_tile[i][j].tank == TANK1_CMD))
+        || (joueur == 2 && (tab_S_tile[i][j].tank == TANK2 || tab_S_tile[i][j].tank == TANK2_CMD))
+        || ( tab_S_tile[i][j].terrain == MINE ))
+    {
+        return 0;
+    }
+
+    else if (tab_S_tile[i][j].terrain == POLLUE && (S_tank.type == TANK1 || S_tank.type == TANK2))
+    {
+        return 0;
+    }
+
+    else if ((joueur == 1 && (tab_S_tile[i][j].tank == TANK2 || tab_S_tile[i][j].tank == TANK2_CMD))
+             || (joueur == 2 && (tab_S_tile[i][j].tank == TANK1 || tab_S_tile[i][j].tank == TANK1_CMD)))
+    {
+        if (tab_S_tile[i][j].terrain == POLLUE)
+        {
+            return 0;
+        }
+
+        else
+        {
+           tab_S_tile[i][j].autorise = 1;
+            return 0;
+        }
+    }
+
+    else
+    {
+        tab_S_tile[i][j].autorise = 1;
+    }
+
+    return 1;
+}
+
+int checkEndGame( struct_tile tab_S_tile[][LARGEUR] )
+{
+    /** Cette procédure vérifie si la partie est terminée ou non, puis compte les points si nécessaire.
+     *  La partie se termine si:
+     *
+     *  - Un des deux joueurs n'a plus de tanks
+     *  - Tous les tanks d'un joueur sont dans la base enemie
+     */
+
+    int i, j, count1 = 0, count2 = 0, frozen1 = 0, frozen2 = 0, fin = 0, score1 = 0, score2 = 0;
+
+    /* On compte le nombre de tanks restant et ceux qui ne peuvent plus bouger */
+
+    for ( i=0 ; i < LARGEUR ; i++)
+    {
+        for ( j=0 ; j < HAUTEUR ; j++)
+        {
+            if (tab_S_tile[j][i].tank == TANK1 || tab_S_tile[j][i].tank == TANK1_CMD)
+            {
+                ++count1;
+                if (tab_S_tile[j][i].tank == TANK1 && tab_S_tile[j][i].terrain == BASE2)
+                {
+                    ++frozen1;
+                }
+            }
+
+            else if (tab_S_tile[j][i].tank == TANK2 || tab_S_tile[j][i].tank == TANK2_CMD)
+            {
+                ++count2;
+                if (tab_S_tile[j][i].tank == TANK2 && tab_S_tile[j][i].terrain == BASE1)
+                {
+                    ++frozen2;
+                }
+            }
+        }
+    }
+
+    if (tab_S_tile[0][0].tank == TANK2_CMD)
+    {
+        ++frozen2;
+    }
+
+    if (tab_S_tile[10][10].tank == TANK1_CMD)
+    {
+        ++frozen1;
+    }
+
+    /* On vérifie si la partie doit se terminer */
+
+    if (count1 == 0 || count2 == 0)
+    {
+        fin = 1;
+    }
+
+    else if (frozen1 == count1 || frozen2 == count2)
+    {
+        fin = 1;
+    }
+
+    /* On compte les points si la partie est terminée */
+
+    if (fin == 1)
+    {
+        /* On commence par le char du commandant qui se trouve sur la case de départ du char commandant adverse */
+
+        if (tab_S_tile[0][0].tank == TANK2_CMD)
+        {
+            score2 += 3;
+            --frozen2;
+            --count2;
+        }
+
+        if (tab_S_tile[10][10].tank == TANK1_CMD)
+        {
+            score1 += 3;
+            --frozen1;
+            --count1;
+        }
+
+        /* On continue avec les chars qui se trouvent dans la base enemie */
+
+        for ( frozen2 ; frozen2 > 0 ; frozen2--, count2--)
+        {
+            score2 += 2;
+        }
+
+        for ( frozen1 ; frozen1 > 0 ; frozen1--, count1--)
+        {
+            score1 += 2;
+        }
+
+        /* On fini par les tanks sur le reste de la carte, s'il en reste */
+
+        for ( count2 ; count2 > 0 ; count2--)
+        {
+            score2 += 1;
+        }
+
+        for ( count1 ; count1 > 0 ; count1--)
+        {
+            score1 += 1;
+        }
+
+        /* On termine la partie */
+
+        endGame( score1, score2);
+        genererCarte( tab_S_tile ); //  On réinitialise le terrain de jeu
+        return 0;
+    }
+
+    return 1;
+}
+
+void endGame( int score1, int score2)
+{
+    /** Cette procédure gère la fin du jeu.
+     *  On affiche les scores ainsi que le gagnant.
      */
 
     int continuer = 1;
     SDL_Event event;
+    SDL_Texture *tex_game_over = NULL, *tex_score1 = NULL, *tex_score2 = NULL;
+    SDL_Surface *surf_texte = NULL;
+    TTF_Font *police = NULL;
+    SDL_Rect position = {0,0,0,0};
+    SDL_Color noir = {0, 0, 0};
+
+    police = TTF_OpenFont("FORCED_SQUARE.ttf", 55);
+    char s_score1[20], s_score2[20];
+    sprintf(s_score1, "Joueur 1: %d points", score1);
+    sprintf(s_score2, "Joueur 2: %d points", score2);
+
+    if (score2 > score1)
+    {
+        surf_texte = TTF_RenderText_Blended(police, "Joueur 2 a gagn\xe9 la partie !", noir);
+    }
+
+    else if (score1 > score2)
+    {
+        surf_texte = TTF_RenderText_Blended(police, "Joueur 1 a gagn\xe9 la partie !", noir);
+    }
+
+    else
+    {
+        surf_texte = TTF_RenderText_Blended(police, "Les deux joueurs ont termin\xe9 ex-aequo !", noir);
+    }
+
+    tex_game_over = SDL_CreateTextureFromSurface( renderer, surf_texte );
+
+    police = TTF_OpenFont("FORCED_SQUARE.ttf", 35);
+    surf_texte = TTF_RenderText_Blended(police, s_score1, noir);
+    tex_score1 = SDL_CreateTextureFromSurface( renderer, surf_texte );
+    surf_texte = TTF_RenderText_Blended(police, s_score2, noir);
+    tex_score2 = SDL_CreateTextureFromSurface( renderer, surf_texte );
+
+    SDL_FreeSurface( surf_texte );
+    SDL_RenderClear( renderer );
+
+    SDL_QueryTexture(tex_game_over, NULL, NULL, &position.w, &position.h);
+    position.x = DIMENSION/2 - position.w/2;
+    position.y = 100;
+    SDL_RenderCopy( renderer, tex_game_over, NULL, &position );
+
+    SDL_QueryTexture(tex_score1, NULL, NULL, &position.w, &position.h);
+    position.x = 50;
+    position.y = 200;
+    SDL_RenderCopy( renderer, tex_score1, NULL, &position );
+
+    SDL_QueryTexture(tex_score2, NULL, NULL, &position.w, &position.h);
+    position.y = 250;
+    SDL_RenderCopy( renderer, tex_score2, NULL, &position );
+
+    SDL_RenderPresent( renderer );
 
     while (continuer)
     {
         SDL_WaitEvent(&event);
-        switch(event.type)
+        if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_ESCAPE)
         {
-            case SDL_QUIT:  // On quitte le jeu quand on appuie sur la croix rouge habituelle
-                continuer = 0;
-                break;
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym)
-                {
-                    case SDLK_ESCAPE: // On quitte quand on appuie sur la touche Echap/Escape
-                        continuer = 0;
-                        break;
-                }
-                break;
+            continuer = 0;
         }
     }
+
+    TTF_CloseFont(police);
+    SDL_DestroyTexture(tex_game_over);
+    SDL_DestroyTexture(tex_score1);
+    SDL_DestroyTexture(tex_score2);
+}
+
+void sauvegarder( int joueur, struct_tile tab_S_tile[][LARGEUR] )
+{
+    /**
+     *  Cette procédure sauvegarde notre plateau de jeu et le dernier joueur dans un fichier sauvegarde.txt
+     */
+
+    FILE* sauvegarde = NULL;
+    int i = 0, j = 0;
+
+    sauvegarde = fopen("sauvegarde.txt", "w");
+    if (sauvegarde == NULL)
+        printf("Echec de la sauvegarde\n");
+
+    for (i = 0 ; i < LARGEUR ; i++)
+    {
+        for (j = 0 ; j < HAUTEUR ; j++)
+        {
+            fprintf(sauvegarde, "%d", tab_S_tile[j][i].tank);
+        }
+    }
+
+    fprintf(sauvegarde, "%d", joueur);
+
+    fclose(sauvegarde);
 }
 
 void close( struct_textures *textures )
 {
-    /** Cette procédure vide la mémoire, pointe nos pointeurs sur NULL et quitte SDL
-     *
-     *  Entrée: structure contenant nos textures
+    /**
+     *  Cette procédure vide la mémoire, pointe nos pointeurs sur NULL et quitte SDL
      */
 
     int i;
@@ -639,6 +1004,8 @@ void close( struct_textures *textures )
         SDL_DestroyTexture( textures->tex_tank[i] );
         textures->tex_tank[i] = NULL;
     }
+    SDL_DestroyTexture( textures->tex_highlight );
+    textures->tex_highlight = NULL;
     SDL_DestroyTexture( textures->tex_terrain );
     textures->tex_terrain = NULL;
     SDL_DestroyRenderer( renderer );
@@ -646,5 +1013,6 @@ void close( struct_textures *textures )
     renderer= NULL;
     ecran = NULL;
     IMG_Quit();
+    TTF_Quit();
     SDL_Quit();
 }

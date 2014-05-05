@@ -37,10 +37,11 @@ typedef struct struct_tile{
 // Nos textures
 
 typedef struct struct_textures{
-    SDL_Texture *tex_terrain = NULL;
-    SDL_Texture *tex_highlight = NULL;
-    SDL_Texture *tex_tank[5] = {NULL};
-    SDL_Texture *tex_tank_mvt[5] = {NULL};
+    SDL_Texture *tex_terrain;
+    SDL_Texture *tex_highlight;
+    SDL_Texture *tex_tank[5];
+    SDL_Texture *tex_tank_mvt[5];
+    SDL_Texture *tex_joueur[2];
 }struct_textures;
 
 // Cette structure contient les informations sur le tank à déplacer
@@ -59,7 +60,7 @@ int menu();
 void sauvegarder( int joueur, struct_tile tab_S_tile[][LARGEUR] );
 void chargerPartie( int *joueur, struct_tile tab_S_tile[][LARGEUR] );
 void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
-void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
+void generateTextures( int joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
 void endGame( int score1, int score2);
 int checkEndGame( struct_tile tab_S_tile[][LARGEUR] );
 void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
@@ -242,12 +243,20 @@ void loadTextures( struct_textures *S_textures )
      *  Cette procédure charge toutes nos textures en mémoire.
      */
 
+    TTF_Font *police = NULL;
+    police = TTF_OpenFont("FORCED_SQUARE.ttf", 25);
+    SDL_Color noir = {0, 0, 0};
+
     S_textures->tex_terrain = IMG_LoadTexture( renderer, "./img/carte.png");
     S_textures->tex_tank[TANK1] = IMG_LoadTexture( renderer, "./img/tanka.png");
     S_textures->tex_tank[TANK2] = IMG_LoadTexture( renderer, "./img/tankb.png");
     S_textures->tex_tank[TANK1_CMD] = IMG_LoadTexture( renderer, "./img/commanda.png");
     S_textures->tex_tank[TANK2_CMD] = IMG_LoadTexture( renderer, "./img/commandb.png");
     S_textures->tex_highlight = IMG_LoadTexture( renderer, "./img/highlight2.png");
+    S_textures->tex_joueur[0] = SDL_CreateTextureFromSurface( renderer, TTF_RenderText_Blended(police, "Joueur 1", noir) );
+    S_textures->tex_joueur[1] = SDL_CreateTextureFromSurface( renderer, TTF_RenderText_Blended(police, "Joueur 2", noir) );
+
+    TTF_CloseFont(police);
 }
 
 void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
@@ -286,7 +295,7 @@ void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile
         if (i==0)
         {
             SDL_RenderClear( renderer );
-            generateTextures( S_textures, tab_S_tile );
+            generateTextures( *joueur, S_textures, tab_S_tile );
             SDL_RenderPresent( renderer );
         }
 
@@ -436,7 +445,7 @@ void chargerPartie( int *joueur, struct_tile tab_S_tile[][LARGEUR])
     fclose(sauvegarde);
 }
 
-void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
+void generateTextures( int joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
 {
     /**
      *  Cette procédure génère nos textures dans notre fenêtre de jeu
@@ -444,6 +453,8 @@ void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LAR
 
     SDL_Rect rect_tank = {0,0,BLOC,BLOC};
     SDL_Rect rect_carte = {0,0,DIMENSION,DIMENSION};
+    SDL_Rect rect_text = {0,0,0,0};
+
     int i,j;
 
     SDL_RenderCopy( renderer, S_textures->tex_terrain, NULL, &rect_carte );
@@ -479,6 +490,16 @@ void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LAR
             }
         }
     }
+
+    SDL_QueryTexture(S_textures->tex_joueur[1], NULL, NULL, &rect_text.w, &rect_text.h);
+    rect_text.x = DIMENSION - rect_text.w*1.2;
+    rect_text.y = 0.2*rect_text.h;
+    if(joueur == 1)
+    {
+        SDL_RenderCopy( renderer, S_textures->tex_joueur[0], NULL, &rect_text );
+    }
+
+    else SDL_RenderCopy( renderer, S_textures->tex_joueur[1], NULL, &rect_text );
 }
 
 void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
@@ -504,7 +525,7 @@ void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_ti
 
         // Si on quitte la fenêtre ou on appuie sur Echap, on sort de la boucle
 
-        if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE)
+        if (event.key.keysym.sym == SDLK_ESCAPE)
         {
             continuer = 0;
         }
@@ -512,7 +533,6 @@ void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_ti
         if (event.type == SDL_MOUSEBUTTONDOWN)
         {
             SDL_GetMouseState( &x_tmp, &y_tmp );    // On récupère les coordonnées du clic
-            printf("%d\n", *joueur);
 
             if (!mouvement)
             {
@@ -602,7 +622,7 @@ void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_ti
         }
 
         SDL_RenderClear( renderer );
-        generateTextures( S_textures, tab_S_tile );
+        generateTextures( *joueur, S_textures, tab_S_tile );
 
         if (mouvement && *joueur == 1)
         {
@@ -857,24 +877,24 @@ int checkEndGame( struct_tile tab_S_tile[][LARGEUR] )
 
         /* On continue avec les chars qui se trouvent dans la base enemie */
 
-        for ( frozen2 ; frozen2 > 0 ; frozen2--, count2--)
+        for (  ; frozen2 > 0 ; frozen2--, count2--)
         {
             score2 += 2;
         }
 
-        for ( frozen1 ; frozen1 > 0 ; frozen1--, count1--)
+        for (  ; frozen1 > 0 ; frozen1--, count1--)
         {
             score1 += 2;
         }
 
         /* On fini par les tanks sur le reste de la carte, s'il en reste */
 
-        for ( count2 ; count2 > 0 ; count2--)
+        for (  ; count2 > 0 ; count2--)
         {
             score2 += 1;
         }
 
-        for ( count1 ; count1 > 0 ; count1--)
+        for (  ; count1 > 0 ; count1--)
         {
             score1 += 1;
         }
@@ -905,7 +925,7 @@ void endGame( int score1, int score2)
 
     police = TTF_OpenFont("FORCED_SQUARE.ttf", 55);
     char s_score1[20], s_score2[20];
-    sprintf(s_score1, "Joueur 1: %d points", score1);
+    sprintf(s_score1, "Joueur 1: %d points", score1);   // On convertit le score entier en string
     sprintf(s_score2, "Joueur 2: %d points", score2);
 
     if (score2 > score1)
@@ -991,7 +1011,7 @@ void sauvegarder( int joueur, struct_tile tab_S_tile[][LARGEUR] )
     fclose(sauvegarde);
 }
 
-void close( struct_textures *textures )
+void close( struct_textures *S_textures )
 {
     /**
      *  Cette procédure vide la mémoire, pointe nos pointeurs sur NULL et quitte SDL
@@ -1001,13 +1021,22 @@ void close( struct_textures *textures )
 
     for (i = 0 ; i < 5 ; i++)
     {
-        SDL_DestroyTexture( textures->tex_tank[i] );
-        textures->tex_tank[i] = NULL;
+        SDL_DestroyTexture( S_textures->tex_tank[i] );
+        SDL_DestroyTexture( S_textures->tex_tank_mvt[i] );
+        S_textures->tex_tank[i] = NULL;
+        S_textures->tex_tank_mvt[i] = NULL;
     }
-    SDL_DestroyTexture( textures->tex_highlight );
-    textures->tex_highlight = NULL;
-    SDL_DestroyTexture( textures->tex_terrain );
-    textures->tex_terrain = NULL;
+
+    for (i = 0 ; i < 2 ; i++)
+    {
+        SDL_DestroyTexture( S_textures->tex_joueur[i] );
+        S_textures->tex_joueur[i] = NULL;
+    }
+
+    SDL_DestroyTexture( S_textures->tex_highlight );
+    S_textures->tex_highlight = NULL;
+    SDL_DestroyTexture( S_textures->tex_terrain );
+    S_textures->tex_terrain = NULL;
     SDL_DestroyRenderer( renderer );
     SDL_DestroyWindow( ecran );
     renderer= NULL;

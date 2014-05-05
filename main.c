@@ -290,12 +290,9 @@ void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile
             genererCarte( tab_S_tile );
         }
 
-        if (i==0)
-        {
-            SDL_RenderClear( renderer );
-            generateTextures( *joueur, S_textures, tab_S_tile );
-            SDL_RenderPresent( renderer );
-        }
+        SDL_RenderClear( renderer );
+        generateTextures( *joueur, S_textures, tab_S_tile );
+        SDL_RenderPresent( renderer );
 
         // Boucle infinie pour bouger un tank
         deplacerTank( joueur, S_textures, tab_S_tile );
@@ -980,7 +977,7 @@ void endGame( int score1, int score2)
 
     else
     {
-        surf_texte = TTF_RenderText_Blended(police, "Les deux joueurs sont ex-aequo !", noir);
+        surf_texte = TTF_RenderText_Blended(police, "Les joueurs sont ex-aequo !", noir);
     }
 
     tex_game_over = SDL_CreateTextureFromSurface( renderer, surf_texte );

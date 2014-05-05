@@ -59,7 +59,7 @@ int menu();
 void sauvegarder( int joueur, struct_tile tab_S_tile[][LARGEUR] );
 void chargerPartie( int *joueur, struct_tile tab_S_tile[][LARGEUR] );
 void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
-void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
+void generateTextures( int joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
 void endGame( int score1, int score2);
 int checkEndGame( struct_tile tab_S_tile[][LARGEUR] );
 void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] );
@@ -286,7 +286,7 @@ void lancement( int *joueur, struct_textures *S_textures, struct_tile tab_S_tile
         if (i==0)
         {
             SDL_RenderClear( renderer );
-            generateTextures( S_textures, tab_S_tile );
+            generateTextures( *joueur, S_textures, tab_S_tile );
             SDL_RenderPresent( renderer );
         }
 
@@ -436,7 +436,7 @@ void chargerPartie( int *joueur, struct_tile tab_S_tile[][LARGEUR])
     fclose(sauvegarde);
 }
 
-void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
+void generateTextures( int joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
 {
     /**
      *  Cette procédure génère nos textures dans notre fenêtre de jeu
@@ -444,6 +444,15 @@ void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LAR
 
     SDL_Rect rect_tank = {0,0,BLOC,BLOC};
     SDL_Rect rect_carte = {0,0,DIMENSION,DIMENSION};
+    SDL_Texture *tex_joueur = NULL;
+    SDL_Surface *surf_texte = NULL;
+    TTF_Font *police = NULL;
+    SDL_Rect position = {0,0,0,0};
+    SDL_Color noir = {0, 0, 0};
+
+    char s_joueur[9];
+    sprintf(s_joueur, "Joueur %d", joueur);
+    police = TTF_OpenFont("FORCED_SQUARE.ttf", 25);
     int i,j;
 
     SDL_RenderCopy( renderer, S_textures->tex_terrain, NULL, &rect_carte );
@@ -479,6 +488,14 @@ void generateTextures( struct_textures *S_textures, struct_tile tab_S_tile[][LAR
             }
         }
     }
+
+    surf_texte = TTF_RenderText_Blended(police, s_joueur, noir);
+    tex_joueur = SDL_CreateTextureFromSurface( renderer, surf_texte );
+    SDL_FreeSurface( surf_texte );
+    SDL_QueryTexture(tex_joueur, NULL, NULL, &position.w, &position.h);
+    position.x = DIMENSION - position.w*1.2;
+    position.y = 0.2*position.h;
+    SDL_RenderCopy( renderer, tex_joueur, NULL, &position );
 }
 
 void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_tile[][LARGEUR] )
@@ -602,7 +619,7 @@ void deplacerTank(int *joueur, struct_textures *S_textures, struct_tile tab_S_ti
         }
 
         SDL_RenderClear( renderer );
-        generateTextures( S_textures, tab_S_tile );
+        generateTextures( *joueur, S_textures, tab_S_tile );
 
         if (mouvement && *joueur == 1)
         {
@@ -857,24 +874,24 @@ int checkEndGame( struct_tile tab_S_tile[][LARGEUR] )
 
         /* On continue avec les chars qui se trouvent dans la base enemie */
 
-        for ( frozen2 ; frozen2 > 0 ; frozen2--, count2--)
+        for (  ; frozen2 > 0 ; frozen2--, count2--)
         {
             score2 += 2;
         }
 
-        for ( frozen1 ; frozen1 > 0 ; frozen1--, count1--)
+        for (  ; frozen1 > 0 ; frozen1--, count1--)
         {
             score1 += 2;
         }
 
         /* On fini par les tanks sur le reste de la carte, s'il en reste */
 
-        for ( count2 ; count2 > 0 ; count2--)
+        for (  ; count2 > 0 ; count2--)
         {
             score2 += 1;
         }
 
-        for ( count1 ; count1 > 0 ; count1--)
+        for (  ; count1 > 0 ; count1--)
         {
             score1 += 1;
         }
@@ -905,7 +922,7 @@ void endGame( int score1, int score2)
 
     police = TTF_OpenFont("FORCED_SQUARE.ttf", 55);
     char s_score1[20], s_score2[20];
-    sprintf(s_score1, "Joueur 1: %d points", score1);
+    sprintf(s_score1, "Joueur 1: %d points", score1);   // On convertit le score entier en string
     sprintf(s_score2, "Joueur 2: %d points", score2);
 
     if (score2 > score1)

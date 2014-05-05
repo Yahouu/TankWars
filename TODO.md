@@ -6,6 +6,7 @@
   - ~~Etablir et implémenter les conditions de fin de partie~~
   - ~~Coder le décompte des points~~
   - ~~Créer un menu~~
+  - ~~Afficher le joueur auquel c'est le tour de jouer~~
   
 ##Perspectives
 

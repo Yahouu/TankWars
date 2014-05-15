@@ -12,7 +12,7 @@
 
   - ~~Ajouter une bordure aux tiles où on peut se déplacer~~
   - ~~Gérer les sauvegardes/savestates~~
-  - Ajouter une bande-son
+  - ~~Ajouter une bande-son~~
   - Créer un éditeur de niveau
   - Ajouter une génération aléatoire de niveau
   - Animer le déplacement des tanks (?)

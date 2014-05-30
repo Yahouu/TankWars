@@ -2,7 +2,7 @@
 
 ##Objectives
 
-TankWar is a modern Polish game that is played on a square board of 11x11 squares. Each player manages his army of 14 tanks - 13 normal and the tank commander, who is strong enough to move through the center field contaminated by chemical weapons. Initially, tank commanders are located in the lower right corner (from the point of view of each player) and normal tanks occupy the remaining area of ​​the base (blue squares for the white player and green squares for the black player).
+TankWar is a modern Polish game that is played on a 11x11 square board. Each player manages his army of 14 tanks - 13 normal and the tank commander, who is strong enough to move through the center field contaminated by chemical weapons. Initially, tank commanders are located in the lower right corner (from the point of view of each player) and normal tanks occupy the remaining area of ​​the base (blue squares for the white player and green squares for the black player).
 
 The goal is to occupy the enemy base with as much tanks as possible. The player with the most points is the winner. The number of points corresponds to the events of the game and will be described in the final section. 
 

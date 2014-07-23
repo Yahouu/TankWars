@@ -59,3 +59,56 @@ int initialiseSDL()
 	
     return 0;
 } 
+
+void close(Textures *gameTextures, Tile **mapTiles)
+{
+	freeTextures(gameTextures);
+	freeMenu();
+	freeMap(mapTiles);
+
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	IMG_Quit();
+	Mix_Quit();
+	TTF_Quit();
+	SDL_Quit();
+}
+
+void freeTextures(Textures *gameTextures)
+{
+    SDL_DestroyTexture(gameTextures->tex_terrain);
+    SDL_DestroyTexture(gameTextures->tex_highlight);
+
+    for (size_t i=0; i<2; i++) {
+    	SDL_DestroyTexture(gameTextures->tex_player[i]);
+    }
+
+    for (size_t i=1; i<5; i++) {
+    	SDL_DestroyTexture(gameTextures->tex_tank[i]);
+    }
+
+    free(gameTextures)
+}
+
+void freeMap(Tile **mapTiles)
+{
+	Tile **mapTile = (Tile**)malloc(sizeof(Tile*) * HEIGHT);
+	for (size_t i = 0 ; i < HEIGHT ; i++) {
+		free(mapTiles[i]);
+	}
+
+	free(mapTiles)
+}
+
+void freeMenu(Menu *menu)
+{
+	SDL_DestroyTexture(menu->tex_title);
+	SDL_DestroyTexture(menu->tex_menu_bg);
+	SDL_DestroyTexture(menu->tex_load);
+	SDL_DestroyTexture(menu->tex_new);
+	SDL_DestroyTexture(menu->tex_quit);
+	SDL_DestroyTexture(menu->tex_music);
+	Mix_FreeMusic(menu->music);
+
+	free(menu);
+}

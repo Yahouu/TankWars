@@ -61,7 +61,7 @@ char * getMap()
 	char line[WIDTH * HEIGHT + 1] = {0};
 	int i = 0, j = 0;
 
-	map = fopen("map.txt", "r");
+	map = fopen("../resources/map.txt", "r");
 
 	if (map == NULL) {
 		fprintf(stderr, "map.txt is empty, cannot generate the map");

@@ -14,6 +14,10 @@
 
 // Function Prototypes
 int initialiseSDL();
+void close(Textures *gameTextures, Tile **mapTiles);
+void freeTextures(Textures *gameTextures);
+void freeMap(Tile **mapTiles);
+void freeMenu(Menu *menu);
 
 // End Include Guard
 #endif

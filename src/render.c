@@ -14,12 +14,13 @@ Textures * loadTextures()
 	TTF_Font *font = TTF_OpenFont("FORCED_SQUARE.ttf", 25);
 	SDL_Color black = {0, 0, 0};
 
-	gameTextures->tex_terrain = IMG_LoadTexture( renderer, "./resources/img/map.png");
-	gameTextures->tex_tank[TANK1] = IMG_LoadTexture( renderer, "./resources/img/tanka.png");
-	gameTextures->tex_tank[TANK2] = IMG_LoadTexture( renderer, "./resources/img/tankb.png");
-	gameTextures->tex_tank[TANK1_CMD] = IMG_LoadTexture( renderer, "./resources/img/commanda.png");
-	gameTextures->tex_tank[TANK2_CMD] = IMG_LoadTexture( renderer, "./resources/img/commandb.png");
-	gameTextures->tex_highlight = IMG_LoadTexture( renderer, "./resources/img/highlight2.png");
+	gameTextures->tex_terrain = IMG_LoadTexture( renderer, "../resources/img/map.png");
+	gameTextures->tex_tank[EMPTY] = NULL;
+	gameTextures->tex_tank[TANK1] = IMG_LoadTexture( renderer, "../resources/img/tanka.png");
+	gameTextures->tex_tank[TANK2] = IMG_LoadTexture( renderer, "../resources/img/tankb.png");
+	gameTextures->tex_tank[TANK1_CMD] = IMG_LoadTexture( renderer, "../resources/img/commanda.png");
+	gameTextures->tex_tank[TANK2_CMD] = IMG_LoadTexture( renderer, "../resources/img/commandb.png");
+	gameTextures->tex_highlight = IMG_LoadTexture( renderer, "../resources/img/highlight2.png");
 	gameTextures->tex_player[0] = SDL_CreateTextureFromSurface( renderer, TTF_RenderText_Blended(font, "Player 1", black) );
 	gameTextures->tex_player[1] = SDL_CreateTextureFromSurface( renderer, TTF_RenderText_Blended(font, "Player 2", black) );
 

@@ -4,9 +4,9 @@
 
 // Include Files
 #include "include.h"
-/*#include "render.h"
+#include "render.h"
 #include "moves.h"
-#include "endgame.h"*/
+#include "endgame.h"
 
 /* might not be needed
 typedef struct _coordinates {

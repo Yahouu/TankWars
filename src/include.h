@@ -60,7 +60,7 @@ typedef struct _tank {
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
-// Local Includes
+/* Local Includes
 #include "menu.h"
 #include "sdl.h"
 #include "render.h"
@@ -68,7 +68,7 @@ SDL_Renderer *renderer = NULL;
 #include "endgame.h"
 #include "gameplay.h"
 #include "moves.h"
-#include "saves.h"
+#include "saves.h"*/
 
 void launcher( int *player, Textures *gameTextures, Tile **mapTiles );
 

@@ -31,12 +31,12 @@ clean:
 rebuild: clean default
 
 $(BDIR)/TankWar2D: ${OBJECTS}
-	${CC} $(CFLAGS) ${LIBS} $^ -o $@
+	${CC} -I. $(CFLAGS) ${LIBS} $^ -o $@
 
 $(ODIR)/main.o: include.h main.c
-	${CC} -c $(CFLAGS) ${LIBS} $< -o $@
+	${CC} -I. -c $(CFLAGS) ${LIBS} $< -o $@
 
 $(ODIR)/%.o: %.c %.h include.h
-	${CC} -c $(CFLAGS) ${LIBS} $< -o $@
+	${CC} -I. -c $(CFLAGS) ${LIBS} $< -o $@
 
 .PHONY: default clean check dist distcheck install uninstall

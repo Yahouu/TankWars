@@ -4,6 +4,7 @@
 
 // Include Files
 #include "include.h"
+#include "map.h"
 
 typedef struct _score {
 	size_t count;

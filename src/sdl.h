@@ -11,7 +11,7 @@
 
 // Include Files
 #include "include.h"
-//#include "menu.h"
+#include "menu.h"
 
 // Function Prototypes
 int initialiseSDL();

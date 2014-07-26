@@ -45,21 +45,21 @@ Tile ** generateMap()
                     break;
             }
 
-            mapTile[i][j].allowed = 0;
+            mapTile[i][j].passable = 0;
         }
     }
 
     mapTile[0][0].tank = TANK1_CMD;
     mapTile[10][10].tank = TANK2_CMD;
 
+    free(line);
     return mapTile;
 }
 
 char * getMap()
 {
 	FILE *map = NULL;
-	char line[WIDTH * HEIGHT + 1] = {0};
-	int i = 0, j = 0;
+    char *line = (char*)malloc(sizeof(char) * WIDTH * HEIGHT + 1);
 
 	map = fopen("../resources/map.txt", "r");
 

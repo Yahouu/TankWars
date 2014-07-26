@@ -11,10 +11,11 @@
 
 // Include Files
 #include "include.h"
+//#include "menu.h"
 
 // Function Prototypes
 int initialiseSDL();
-void close(Textures *gameTextures, Tile **mapTiles);
+void close(Textures *gameTextures, Tile **mapTiles, Menu *menu);
 void freeTextures(Textures *gameTextures);
 void freeMap(Tile **mapTiles);
 void freeMenu(Menu *menu);

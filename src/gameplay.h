@@ -4,6 +4,9 @@
 
 // Include Files
 #include "include.h"
+/*#include "render.h"
+#include "moves.h"
+#include "endgame.h"*/
 
 /* might not be needed
 typedef struct _coordinates {
@@ -13,7 +16,7 @@ typedef struct _coordinates {
 } Coordinates;*/
 
 int moveTank(int *player, Textures *gameTextures, Tile **mapTiles);
-int chooseTank(int *player, Tile **mapTiles, Textures *gameTextures, Tank *tank);
+int chooseTank(int *player, Tile **mapTiles, Tank *tank);
 int dropTank(int *player, Tile **mapTiles, Textures *gameTextures, Tank *tank, SDL_Rect rect);
 
 #endif

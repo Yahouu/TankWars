@@ -14,21 +14,16 @@
 #include <time.h>
 
 // SDL2 Includes
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_mixer.h>
-#include <SDL_ttf.h>
-
-// Local Includes
-//#include "sdl.h"
-//#include "render.h"
-//#include "map.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
+#include "SDL2/SDL_mixer.h"
+#include "SDL2/SDL_ttf.h"
 
 // Global Settings
 //const int MAP_WIDTH = 11;
 //const int MAP_HEIGHT = 11;
 
-#define BLOCK           65                  // Tile dimension
+#define TILE            65                  // Tile dimension
 #define DIMTANK         64                  // Tank dimension
 #define WIDTH           11                  // Number of blocks horizontally
 #define HEIGHT          11                  // Number of blocks vertically
@@ -62,7 +57,20 @@ typedef struct _tank {
 	int type;
 } Tank;
 
-void launcher( size_t *player, Textures *gameTextures, Tile **mapTiles );
+SDL_Window *window = NULL;
+SDL_Renderer *renderer = NULL;
+
+// Local Includes
+#include "menu.h"
+#include "sdl.h"
+#include "render.h"
+#include "map.h"
+#include "endgame.h"
+#include "gameplay.h"
+#include "moves.h"
+#include "saves.h"
+
+void launcher( int *player, Textures *gameTextures, Tile **mapTiles );
 
 // END of Inclusion Guard
 #endif

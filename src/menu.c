@@ -1,9 +1,7 @@
 #include "menu.h"
 
-int displayMenu() 
+int displayMenu(Menu *menu) 
 {
-	static Menu *menu = NULL;
-
 	if (menu == NULL) {
 		loadMenu(menu);
 	}
@@ -30,11 +28,11 @@ void loadMenu(Menu *menu)
 	SDL_Color black = {0,0,0,0};
 
 	menu->music = Mix_LoadMUS("cccp.mp3");
-	if (music == NULL) {
+	if (menu->music == NULL) {
 		fprintf(stderr, "Failed to load the music (%s)\n", Mix_GetError());
 	}
 
-	menu->text_title = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, "TankWar", black));
+	menu->tex_title = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, "TankWar", black));
 
 	font = TTF_OpenFont("FORCED_SQUARE.ttf", 35);
 	menu->tex_load = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, "Enter - continue a game", black));
@@ -58,7 +56,6 @@ void writeText(SDL_Texture *text, SDL_Rect *position, int x, int y)
 int menuEvents(Menu *menu)
 {
 	SDL_Event event;
-	int choice = 0;
 
 	while (1) {
 		SDL_WaitEvent(&event);

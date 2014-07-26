@@ -5,6 +5,7 @@
 // Include Files
 #include "include.h"
 
+void calculateMoves(int player, Tile **mapTiles, Tank tank);
 void down(int player, Tile **mapTiles, Tank tank);
 void up(int player, Tile **mapTiles, Tank tank);
 void left(int player, Tile **mapTiles, Tank tank);

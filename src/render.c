@@ -32,16 +32,16 @@ Textures * loadTextures()
 // Generate textures for a tile
 void generateTextures( int player, Textures *gameTextures, Tile **mapTiles )
 {
-	SDL_Rect rect_tank = {0,0,BLOCK,BLOCK};
+	SDL_Rect rect_tank = {0,0,TILE,TILE};
 	SDL_Rect rect_map = {0,0,DIMENSION,DIMENSION};
-	SDL_Rect rect_text = {0,0,0,0}
+	SDL_Rect rect_text = {0,0,0,0};
 
 	SDL_RenderCopy(renderer, gameTextures->tex_terrain, NULL, &rect_map);
 
 	for (size_t i=0; i < WIDTH; i++) {
 		for (size_t j=0; j < HEIGHT; j++) {
-			rect_tank.y = i * BLOCK;
-			rect_tank.x = j * BLOCK;
+			rect_tank.y = i * TILE;
+			rect_tank.x = j * TILE;
 
 			switch(mapTiles[i][j].tank) {
 				case 1:
@@ -61,7 +61,7 @@ void generateTextures( int player, Textures *gameTextures, Tile **mapTiles )
 					break;
 			}
 
-			if (mapTiles[i][j].allowed == 1) {
+			if (mapTiles[i][j].passable == 1) {
 				SDL_RenderCopy(renderer, gameTextures->tex_highlight, NULL, &rect_tank);
 			}
 		}

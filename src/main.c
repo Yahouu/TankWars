@@ -6,14 +6,14 @@
 
 #include "include.h"
 
-int main( void )
+int main( int argc, char *argv[] )
 {
     if (initialiseSDL() == -1) {
     	exit(EXIT_FAILURE);
     }
 
     srand(time(NULL));
-    size_t player = ((rand()%2) + 1);
+    int player = ((rand()%2) + 1);
 
     Tile ** mapTiles = generateMap();
     Textures * gameTextures = loadTextures();
@@ -23,14 +23,15 @@ int main( void )
     return 0;
 }
 
-void launcher( size_t *player, Textures *gameTextures, Tile **mapTiles )
+void launcher( int *player, Textures *gameTextures, Tile **mapTiles )
 {
 	static size_t launches = 0;
-	int choice = displayMenu();
+	static Menu *menu = NULL;
+	int choice = displayMenu(menu);
 
-	if (choice = QUIT) {
-		save(*player, mapTiles);
-		close(mapTiles, gameTextures);
+	if (choice == QUIT) {
+		saveGame(*player, mapTiles);
+		close(gameTextures, mapTiles, menu);
 	} else {
 		if (choice == LOAD && launches == 0) {
 			// The game is already loaded after launches > 0

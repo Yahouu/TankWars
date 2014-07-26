@@ -60,10 +60,10 @@ int initialiseSDL()
     return 0;
 } 
 
-void close(Textures *gameTextures, Tile **mapTiles)
+void close(Textures *gameTextures, Tile **mapTiles, Menu *menu)
 {
 	freeTextures(gameTextures);
-	freeMenu();
+	freeMenu(menu);
 	freeMap(mapTiles);
 
 	SDL_DestroyRenderer(renderer);
@@ -87,17 +87,16 @@ void freeTextures(Textures *gameTextures)
     	SDL_DestroyTexture(gameTextures->tex_tank[i]);
     }
 
-    free(gameTextures)
+    free(gameTextures);
 }
 
 void freeMap(Tile **mapTiles)
 {
-	Tile **mapTile = (Tile**)malloc(sizeof(Tile*) * HEIGHT);
 	for (size_t i = 0 ; i < HEIGHT ; i++) {
 		free(mapTiles[i]);
 	}
 
-	free(mapTiles)
+	free(mapTiles);
 }
 
 void freeMenu(Menu *menu)

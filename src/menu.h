@@ -15,7 +15,7 @@ typedef struct _menu {
 	Mix_Music *music;
 } Menu;
 
-int displayMenu();
+int displayMenu(Menu *menu);
 void loadMenu(Menu *menu);
 void writeText(SDL_Texture *text, SDL_Rect *position, int x, int y);
 int menuEvents(Menu *menu);

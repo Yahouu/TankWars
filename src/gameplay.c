@@ -24,7 +24,7 @@ int moveTank(int *player, Textures *gameTextures, Tile **mapTiles)
 				movement = chooseTank(player, mapTiles, &tank);
 			}
 
-			else if (mapTiles[rect.y/TILE][rect.x/TILE].allowed != INVALID) {
+			else if (mapTiles[rect.y/TILE][rect.x/TILE].passable != INVALID) {
 				if (dropTank(player, mapTiles, gameTextures, &tank, rect) == QUIT)
 				{
 					return QUIT;
@@ -51,7 +51,7 @@ int moveTank(int *player, Textures *gameTextures, Tile **mapTiles)
 	return QUIT;
 }
 
-int chooseTank(int *player, Tile **mapTiles, Textures *gameTextures, Tank *tank)
+int chooseTank(int *player, Tile **mapTiles, Tank *tank)
 {
 	tank->type = mapTiles[tank->y][tank->x].tank;
 
@@ -74,7 +74,7 @@ int dropTank(int *player, Tile **mapTiles, Textures *gameTextures, Tank *tank, S
 
 	for (size_t i=0; i<HEIGHT; i++) {
 		for (size_t j=0; j<WIDTH; j++) {
-			mapTiles[j][i].allowed = 0;
+			mapTiles[j][i].passable = 0;
 		}
 	}
 

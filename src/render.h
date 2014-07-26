@@ -17,8 +17,5 @@ Textures * loadTextures();
 
 void generateTextures( int player, Textures *gameTextures, Tile **mapTiles );
 
-SDL_Window *window = NULL;
-SDL_Renderer *renderer = NULL;
-
 // End Include Guard
 #endif

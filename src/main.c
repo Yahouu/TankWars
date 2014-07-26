@@ -14,9 +14,12 @@
 #include "saves.h"
 #include "gameplay.h"
 
+ SDL_Window *window = NULL;
+ SDL_Renderer *renderer = NULL;
+
 int main( int argc, char *argv[] )
 {
-    if (initialiseSDL() == -1) {
+   if (initialiseSDL() == -1) {
     	exit(EXIT_FAILURE);
     }
 

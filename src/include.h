@@ -57,6 +57,9 @@ typedef struct _tank {
 	int type;
 } Tank;
 
+extern SDL_Window *window;
+extern SDL_Renderer *renderer;
+
 /* Local Includes
 #include "menu.h"
 #include "sdl.h"

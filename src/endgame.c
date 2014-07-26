@@ -15,7 +15,7 @@ int checkEndGame(Textures *gameTextures, Tile **mapTiles)
 		countPoints(mapTiles, &score2, TANK2, 0);
 
 		endGame(gameTextures, score1.total, score2.total);
-		generateMap(mapTiles);
+		mapTiles = generateMap();
 		return QUIT;
 	}
 

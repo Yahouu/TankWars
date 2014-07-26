@@ -48,6 +48,12 @@ int initialiseSDL()
 		return -1;
 	}
 
+	initted = Mix_Init(MIX_INIT_MP3);
+	if ((initted&MIX_INIT_MP3) != MIX_INIT_MP3) {
+		fprintf(stdout, "Mix_Init: Failed to init MP3 support! (%s)\n", Mix_GetError());
+    	return -1;
+	}
+
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
 		fprintf(stderr, "Failed to initialise SDL_mixer (%s)\n", Mix_GetError());
 		return -1;
@@ -57,6 +63,8 @@ int initialiseSDL()
 		fprintf(stderr, "Failed to initialise SDL_TTF (%s)\n", TTF_GetError());
 		return -1;
 	}
+
+	fprintf(stdout, "Finished initialisation.\n");
 	
     return 0;
 } 

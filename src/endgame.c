@@ -102,7 +102,7 @@ int endGame(Textures *gameTextures, size_t score1, size_t score2)
 
 void loadScreen(EndScreen *endscreen, int score1, int score2)
 {
-	TTF_Font *font = TTF_OpenFont("FORCED_SQUARE.ttf", 55);
+	TTF_Font *font = TTF_OpenFont("../resources/FORCED_SQUARE.ttf", 55);
 	SDL_Color black = {0,0,0,0};
 
 	char s_score1[20], s_score2[20];
@@ -117,7 +117,7 @@ void loadScreen(EndScreen *endscreen, int score1, int score2)
 		endscreen->tex_game_over = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, "It's a tie !", black));
 	}
 
-	font = TTF_OpenFont("FORCED_SQUARE.ttf", 35);
+	font = TTF_OpenFont("../resources/FORCED_SQUARE.ttf", 35);
 	endscreen->tex_score1 = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, s_score1, black));
 	endscreen->tex_score2 = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, s_score2, black));
 

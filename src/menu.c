@@ -4,7 +4,9 @@
 int displayMenu(Menu *menu) 
 {
 	if (menu == NULL) {
+		menu = (Menu*)malloc(sizeof(menu));
 		loadMenu(menu);
+		fprintf(stdout, "Loaded menu into memory.\n");
 	}
 
 	SDL_Rect position = {0,0,DIMENSION,DIMENSION};
@@ -12,12 +14,12 @@ int displayMenu(Menu *menu)
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, menu->tex_menu_bg, NULL, &position);
 
-    /*writeText(menu->tex_title, &position, (DIMENSION/2 - 130), 100);
+    writeText(menu->tex_title, &position, (DIMENSION/2 - 130), 100);
     writeText(menu->tex_load, &position, 50, 200);
     writeText(menu->tex_new, &position, 50, 250);
     writeText(menu->tex_music, &position, 50, 300);
     writeText(menu->tex_quit, &position, 50, 350);
-*/
+
     SDL_RenderPresent(renderer);
 
     return menuEvents(menu);
@@ -25,17 +27,19 @@ int displayMenu(Menu *menu)
 
 void loadMenu(Menu *menu)
 {
-	TTF_Font *font = TTF_OpenFont("FORCED_SQUARE.ttf", 65);
-	SDL_Color black = {0,0,0,0};
+	TTF_Font *font = TTF_OpenFont("../resources/FORCED_SQUARE.ttf", 65);
+	SDL_Color black = {0,0,0};
 
-	menu->music = Mix_LoadMUS("cccp.mp3");
+	menu->music = Mix_LoadMUS("../resources/cccp.mp3");
 	if (menu->music == NULL) {
 		fprintf(stderr, "Failed to load the music (%s)\n", Mix_GetError());
 	}
 
+	fprintf(stdout, "Menu: Opened font and music file.\n");
+
 	menu->tex_title = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, "TankWar", black));
 
-	font = TTF_OpenFont("FORCED_SQUARE.ttf", 35);
+	font = TTF_OpenFont("../resources/FORCED_SQUARE.ttf", 35);
 	menu->tex_load = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, "Enter - continue a game", black));
 	menu->tex_new = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, "N        - New Game", black));
 	menu->tex_quit = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, "Escape - Quit the game", black));

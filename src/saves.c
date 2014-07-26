@@ -5,7 +5,7 @@ void loadGame(int *player, Tile **mapTiles)
 	FILE *save = NULL;
 	char line[WIDTH * HEIGHT + 2] = {0};
 
-	save = fopen("../save.txt", "r");
+	save = fopen("../resources/save.txt", "r");
 	if (save == NULL) {
 		fprintf(stderr, "Failed to load the game\n");
 	}
@@ -40,7 +40,7 @@ void loadGame(int *player, Tile **mapTiles)
 
 void saveGame(int player, Tile **mapTiles)
 {
-	FILE *save = fopen("../save.txt", "w");
+	FILE *save = fopen("../resources/save.txt", "w");
 	if (save == NULL) {
 		fprintf(stderr, "Failed to save the game\n");
 	}

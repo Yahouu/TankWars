@@ -11,7 +11,7 @@
 Textures * loadTextures()
 {
 	Textures *gameTextures = (Textures*)malloc(sizeof(Textures));
-	TTF_Font *font = TTF_OpenFont("FORCED_SQUARE.ttf", 25);
+	TTF_Font *font = TTF_OpenFont("../resources/FORCED_SQUARE.ttf", 25);
 	SDL_Color black = {0, 0, 0};
 
 	gameTextures->tex_terrain = IMG_LoadTexture( renderer, "../resources/img/map.png");

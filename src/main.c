@@ -26,8 +26,10 @@ int main( int argc, char *argv[] )
     srand(time(NULL));
     int player = ((rand()%2) + 1);
 
-    Tile ** mapTiles = generateMap();
-    Textures * gameTextures = loadTextures();
+    Tile **mapTiles = generateMap();
+    fprintf(stdout, "Map Generated.\n");
+    Textures *gameTextures = loadTextures();
+    fprintf(stdout, "Textures loaded into memory.\n");
 
     launcher(&player, gameTextures, mapTiles);
 
@@ -38,6 +40,7 @@ void launcher( int *player, Textures *gameTextures, Tile **mapTiles )
 {
 	static size_t launches = 0;
 	static Menu *menu = NULL;
+	fprintf(stdout, "Entered launcher.\n");
 	int choice = displayMenu(menu);
 
 	if (choice == QUIT) {

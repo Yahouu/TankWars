@@ -10,10 +10,9 @@ HEADERS := map.h render.h sdl.h endgame.h gameplay.h menu.h moves.h saves.h
 _OBJECTS := $(HEADERS:.h=.o)
 OBJECTS = $(patsubst %,$(ODIR)/%,$(_OBJECTS))
 LIBS := -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -luser32 -lgdi32 -lwinmm -ldxguid
-#LIBS := -lSDL2 -lSDL2main -lSDL2_image -lSDL2_mixer -lSDL2_ttf -mwindows
 INCLUDES := -I. -I$(ODIR)
 CFLAGS = -Wall -g -std=c11
-#CFLAGS = -O2 -std=c11
+#NODEBUG = -O2 -std=c11 -mwindows
 CC = gcc
 
 default: TankWar2D

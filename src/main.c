@@ -14,8 +14,8 @@
 #include "saves.h"
 #include "gameplay.h"
 
- SDL_Window *window = NULL;
- SDL_Renderer *renderer = NULL;
+SDL_Window *window = NULL;
+SDL_Renderer *renderer = NULL;
 
 int main( int argc, char *argv[] )
 {
@@ -38,9 +38,16 @@ int main( int argc, char *argv[] )
 
 void launcher( int *player, Textures *gameTextures, Tile **mapTiles )
 {
+	fprintf(stdout, "Entered launcher.\n");
+
 	static size_t launches = 0;
 	static Menu *menu = NULL;
-	fprintf(stdout, "Entered launcher.\n");
+	if (menu == NULL) {
+		menu = (Menu*)malloc(sizeof(menu));
+		loadMenu(menu);
+		fprintf(stdout, "Loaded menu into memory.\n");
+	}
+	
 	int choice = displayMenu(menu);
 
 	if (choice == QUIT) {

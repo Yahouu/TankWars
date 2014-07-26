@@ -3,12 +3,6 @@
 
 int displayMenu(Menu *menu) 
 {
-	if (menu == NULL) {
-		menu = (Menu*)malloc(sizeof(menu));
-		loadMenu(menu);
-		fprintf(stdout, "Loaded menu into memory.\n");
-	}
-
 	SDL_Rect position = {0,0,DIMENSION,DIMENSION};
 
     SDL_RenderClear(renderer);

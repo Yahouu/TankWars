@@ -76,10 +76,17 @@ void close(Textures *gameTextures, Tile **mapTiles, Menu *menu)
 	freeMap(mapTiles);
 
 	SDL_DestroyRenderer(renderer);
+	fprintf(stdout, "Freed renderer.\n");
 	SDL_DestroyWindow(window);
+	fprintf(stdout, "Freed window.\n");
 	IMG_Quit();
-	Mix_Quit();
+	fprintf(stdout, "Freed IMG.\n");
+	while(Mix_Init(0))
+    	Mix_Quit();
+    Mix_CloseAudio();
+	fprintf(stdout, "Freed MIXER.\n");
 	TTF_Quit();
+	fprintf(stdout, "Freed TTF.\n");
 	SDL_Quit();
 }
 
@@ -97,6 +104,7 @@ void freeTextures(Textures *gameTextures)
     }
 
     free(gameTextures);
+    fprintf(stdout, "Freed textures.\n");
 }
 
 void freeMap(Tile **mapTiles)
@@ -106,6 +114,7 @@ void freeMap(Tile **mapTiles)
 	}
 
 	free(mapTiles);
+	fprintf(stdout, "Freed map array.\n");
 }
 
 void freeMenu(Menu *menu)
@@ -119,4 +128,5 @@ void freeMenu(Menu *menu)
 	Mix_FreeMusic(menu->music);
 
 	free(menu);
+	fprintf(stdout, "Freed menu.\n");
 }

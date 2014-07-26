@@ -14,10 +14,10 @@
 #include <time.h>
 
 // SDL2 Includes
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
-#include "SDL2/SDL_mixer.h"
-#include "SDL2/SDL_ttf.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_ttf.h>
 
 // Global Settings
 //const int MAP_WIDTH = 11;
@@ -56,9 +56,6 @@ typedef struct _tank {
 	int x,y;
 	int type;
 } Tank;
-
-SDL_Window *window = NULL;
-SDL_Renderer *renderer = NULL;
 
 /* Local Includes
 #include "menu.h"

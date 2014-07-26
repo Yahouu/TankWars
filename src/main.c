@@ -5,6 +5,14 @@
  */
 
 #include "include.h"
+#include "menu.h"
+#include "map.h"
+#include "render.h"
+#include "sdl.h"
+#include "endgame.h"
+#include "moves.h"
+#include "saves.h"
+#include "gameplay.h"
 
 int main( int argc, char *argv[] )
 {

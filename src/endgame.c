@@ -1,4 +1,6 @@
 #include "endgame.h"
+#include "render.h"
+#include "menu.h"
 
 int checkEndGame(Textures *gameTextures, Tile **mapTiles)
 {
@@ -122,12 +124,4 @@ void loadScreen(EndScreen *endscreen, int score1, int score2)
 	TTF_CloseFont(font);
 
 	endscreen->tex_background = IMG_LoadTexture( renderer, "../resources/img/menu_bg.png");
-}
-
-void writeText(SDL_Texture *text, SDL_Rect *position, int x, int y)
-{
-	SDL_QueryTexture(text, NULL, NULL, &position->w, &position->h);
-	position->x = x;
-	position->y = y;
-	SDL_RenderCopy(renderer, text, NULL, position);
 }

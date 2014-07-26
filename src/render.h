@@ -17,9 +17,8 @@ Textures * loadTextures();
 
 void generateTextures( int player, Textures *gameTextures, Tile **mapTiles );
 
-/* TODO: Refactor
-void writeText( const char*, SDL_Surface*, SDL_Texture*, TTF_Font*, SDL_Rect*, int, int );
-*/
+SDL_Window *window = NULL;
+SDL_Renderer *renderer = NULL;
 
 // End Include Guard
 #endif

@@ -77,11 +77,3 @@ void generateTextures( int player, Textures *gameTextures, Tile **mapTiles )
 		SDL_RenderCopy(renderer, gameTextures->tex_player[1], NULL, &rect_text);
 	}
 }
-/*
-// TODO: Refactor
-void writeText( const char* message, SDL_Surface* surfTexture , SDL_Texture* textTexture, 
-        TTF_Font* textFont, SDL_Rect* position, int x, int y )
-{
-    // STUB: Test Output
-    printf( "Inside writeText()\n" );
-}*/

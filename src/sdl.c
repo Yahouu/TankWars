@@ -7,6 +7,7 @@
 
 // Include Files
 #include "sdl.h"
+#include "render.h"
 
 // Initialize the SDL systems we'll be using
 int initialiseSDL()

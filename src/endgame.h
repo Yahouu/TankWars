@@ -25,6 +25,5 @@ void countTanks(Score *score, Tile **mapTiles, int tank, int base, int origin);
 void countPoints(Tile **mapTiles, Score *score, int tank, int origin);
 int endGame(Textures *gameTextures, size_t score1, size_t score2);
 void loadScreen(EndScreen *endscreen, int score1, int score2);
-void writeText(SDL_Texture *text, SDL_Rect *position, int x, int y);
 
 #endif

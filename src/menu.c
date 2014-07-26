@@ -1,4 +1,5 @@
 #include "menu.h"
+#include "render.h"
 
 int displayMenu(Menu *menu) 
 {
@@ -11,12 +12,12 @@ int displayMenu(Menu *menu)
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, menu->tex_menu_bg, NULL, &position);
 
-    writeText(menu->tex_title, &position, (DIMENSION/2 - 130), 100);
+    /*writeText(menu->tex_title, &position, (DIMENSION/2 - 130), 100);
     writeText(menu->tex_load, &position, 50, 200);
     writeText(menu->tex_new, &position, 50, 250);
     writeText(menu->tex_music, &position, 50, 300);
     writeText(menu->tex_quit, &position, 50, 350);
-
+*/
     SDL_RenderPresent(renderer);
 
     return menuEvents(menu);

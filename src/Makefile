@@ -12,7 +12,8 @@ OBJECTS = $(patsubst %,$(ODIR)/%,$(_OBJECTS))
 #LIBS := -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -luser32 -lgdi32 -lwinmm -ldxguid -mwindows
 LIBS := -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 INCLUDES := -I. -I/usr/includ/SDL2 -I$(ODIR)
-CFLAGS = -Wall -O2 -std=c11
+#CFLAGS = -Wall -O2 -std=c11
+CFLAGS = -O2 -std=c11
 CC = gcc
 
 default: TankWar2D

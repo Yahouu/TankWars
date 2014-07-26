@@ -1,57 +1,62 @@
 #TankWar
 
-##Objectifs
+##Objectives
 
-La Bataille de chars est un jeu moderne polonais qui est joué sur un plateau carré de 11x11 cases. Chaque joueur gère son armée de 14 chars - 13 normaux et un, le char du commandant, qui est suffisamment résistant pour se déplacer à travers le terrain contaminé par des armes chimiques. Au départ, les chars des commandants sont situés dans le coin en bas à droite (du point de vue de chaque joueur) et les chars normaux occupent la zone restante de la base (cases bleues pour le joueur blanc et case verte pour le joueur noir).
+TankWar is a modern Polish game that is played on a 11x11 square board. Each player manages his army of 14 tanks - 13 normal and the tank commander, who is strong enough to move through the center field contaminated by chemical weapons. Initially, tank commanders are located in the lower right corner (from the point of view of each player) and normal tanks occupy the remaining area of ​​the base (blue squares for the white player and green squares for the black player).
 
-Le but est d'occuper la base ennemie par autant de ses chars que possible. Le joueur qui obtient le plus de points est le gagnant. Le nombre de points correspond aux événements du jeu et seront décrits à la section finale de cet article.
+The goal is to occupy the enemy base with as much tanks as possible. The player with the most points is the winner. The number of points corresponds to the events of the game and will be described in the final section. 
 
-![alt text](http://sanic.violates.me/i/nvSlaf.jpg "Plateau de jeu")
+![alt text](http://sanic.violates.me/i/nvSlaf.jpg "Tabletop")
 
-##Buts du jeu
+##Goals
 
-####Déplacement des chars
+####Tank Movement
 
-Chaque joueur peut bouger un char par tour. Les chars peuvent se déplacer de plusieurs cases verticalement, horizontalement ou en diagonale avec ces conditions:
-  - Un char ne peut pas se déplacer sur les cases noires (mines).
-  - Un char ne peut pas sauter par dessus un char allié ou adverse.
-  - Seul le char du commandant peut aller sur les cases rouges (ou les traverser) au centre du plateau (zone polluée).
-  - Les chars des commandants ne peuvent se capturer l'un l'autre dans la zone rouge polluée du centre.
-  - Le char qui a atteint la base adverse (cases vertes ou bleues) ne peut pas quitter cette base jusqu'à la fin de la partie.
+Each player can move a tank per turn. Tanks can move several squares vertically, horizontally or diagonally with these conditions:
+  - A tank cannot move on the black squares (mines).
+  - A tank can not jump over an ally or enemy tank.
+  - Only the tank commander can go on the purple squares (or cross them) in the center of the map (polluted area).
+  - Tank commanders cannot capture each other in the polluted purple zone at the center.
+  - Tanks that reach the enemy base (green or blue squares) cannot leave the base until the end of the game.
 
-####Comment capturer les chars ennemis :
+####How to capture enemy tanks
 
-La partie est terminée si un joueur amène tous ses chars non détruits dans la base ennemie. A ce moment, le score final est calculé et le joueur qui a le plus de points gagne. Dans le cas d'un même nombre de points pour chaque joueur la partie est nulle.
+The game ends when a player moves all his remaining tanks to the enemy base . The final score is calculated and the player with the most points wins. The game is drawn if each player has the same points.
 
-Les points sont comptés de la manière suivante:
+Points are counted as follows :
 
- - 3 points pour le char du commandant qui se trouve sur la case de départ du char commandant adverse (la case marquée d'un cercle).
- - 2 points pour un char de commandant qui se trouve sur n'importe quelle case de la base ennemie.
- - 2 points pour un char ordinaire qui se trouve sur n'importe quelle case de la base ennemie.
- - 1 point pour n'importe quel char (ordinaire ou commandant) qui reste sur le champ de bataille et qui n'est pas détruit.
+ - 3 points if the tank commander is on the starting tile of the opponent tank commander.
+ - 2 points for a tank commander who is in any tile of the enemy base.
+ - 2 points for a regular tank that is in any tile of the enemy base .
+ - 1 point for any tank (ordinary or commander) that remains on the battlefield and isn't destroyed.
 
-![alt text](http://i.imgur.com/WvEJlta.jpg?1 "Décompte des points")
+![alt text](http://i.imgur.com/WvEJlta.jpg?1 "Counting Points")
 
-Le joueur blanc a 2 points pour le char du commandant dans la base ennemie et 2 x 1 point pour deux chars sur le champ de bataille, le résultat donne 4 points. Le joueur noir obtient 3 points pour le char du commandant sur la case de départ du char commandant blanc et 2 x 2 points pour deux chars dans la base ennemie, le résultat donne 7 points. Noir est le vainqueur.
+The white player has 2 points for the commander tank in the enemy base and 2 x 1 point for the two tanks on the battlegrounds, the result is 4 points total. The black player obtains 3 points for the tank commander on the starting tile of the white commmander tank and 2x2 points for his two tanks in the enemy base, the result is 7 points. Black wins.
+
 
 ##Version
 
-1.1
+1.2
 
-##Installation
+##Compilation
 
- - Installer SDL2 et les librairies SDL_Image et SDL_TTF pour votre OS et IDE favoris
- - Ajouter les flags de compilation nécessaires. Exemple pour Windows et Codeblocks:
+ - Install SDL2, SDL_Image, SDL_TTF and SDL_mixer
+ - Use the proper compilation flags. For example, on Windows:
  ```
- -IC:\$PATH\include\SDL2 -IC:\$PATH\include -LC:\$PATH\lib -lSDL2_image -lSDL2_ttf -lmingw32 -lSDL2main -lSDL2.dll -luser32 -lgdi32 -lwinmm -ldxguid
+ gcc /path/to/main.c -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2main -lSDL2 -luser32 -lgdi32 -lwinmm -ldxguid -mwindows -o /path/to/tankwar.exe
 ```
- - Copier les dll pour SDL2, SDL_Image et SDL_TTF dans le dossier du projet
+   Under Linux (compiling with gcc works, but the game segfaults):
+ ```
+ g++ -I/usr/include -lSDL2 -lSDL2main -lSDL2_image -lSDL2_mixer -lSDL2_ttf main.c
+ ```
+ - On Windows, copy the proper dll for SDL2 et the libraries in the project directory.
 
 
 ##Technologies 
 
-* [C] - langage de programmation qu'on ne présente plus
-* [SDL2] - librairie de développement de jeux vidéo en 2D ou 3D
+* [C]
+* [SDL2] - 2D and 3D video game development library
 
 [C]:https://en.wikipedia.org/wiki/C_%28programming_language%29
 [SDL2]:http://www.libsdl.org/
